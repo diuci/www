@@ -537,17 +537,24 @@ class Game {
     this._voiceSync(false);   // 本题结束，停止收音
     const name = who || '有人';
     if (ok) {
+      // 屏幕中央先炸一句「好句！」（这是答对的高光时刻），随后跟上是谁接上了哪一句
+      this.hud?.banner?.('special', '好句！');
       // 全队可见：谁接上了哪一句（这是"表演感"的关键）
-      this.hud?.banner?.('special', `${name} 接上了「${q.options[q.correct].text}」`);
-      this.hud?.feed?.({ text: `${name} 接上「${q.options[q.correct].text}」 全队大招 +`, color: G.teamHex[team ?? 0], kind: 'ally' });
-      G.audio?.play('special_ready', { volume: 0.8 });
-      // 在他脚下的区域刻出这两句诗
+      this.hud?.feed?.({ text: `好句！${name} 接上「${q.options[q.correct].text}」 全队大招 +`, color: G.teamHex[team ?? 0], kind: 'ally' });
+      G.audio?.play('special_ready', { volume: 0.85 });
+      // 在他脚下刻出这两句诗（刻字本身就写着是谁的诗）
       const actor = this.match?.actors?.find((a) => a.name === who) || this.match?.local;
       const line = `${q.askText}　${q.options[q.correct].text}`;
       if (actor && this.match?.stampPoemAt) {
         const done = this.match.stampPoemAt(actor, line, actor.team);
         if (done) G.audio?.play('splat_big', { volume: 0.5 });
       }
+      // 答对的特效：在他身上炸一圈墨 + 把"谁接上了"顶到屏幕（全队可见）
+      if (actor) {
+        G.fx?.ring?.(actor.pos, new THREE.Vector3(0, 1, 0), G.teamHex[actor.team] || '#ff8a14', { radius: 3.2, life: 0.5 });
+        this.hud?.hitMarker?.('kill');
+      }
+      this._quizCallout = { name, text: q.options[q.correct].text, t: G.time, team: team ?? 0 };
     } else if (res) {
       this.hud?.banner?.('custom', `接错了 · 是「${q.options[q.correct].text}」`);
     }
@@ -1492,6 +1499,8 @@ class Game {
       // 丢词大作战：接诗题目（屏幕边缘显示，不挡视野）+ 我负责的诗
       quiz: m.quiz ? m.quiz.state() : null,
       quizVoice: !!(this.settings.voiceQuiz && this._voiceOn),
+      // 答对后短暂置顶的「谁接上了哪一句」——全队可见，这是表演感的关键
+      quizCallout: this._quizCallout && (G.time - this._quizCallout.t) < 3.2 ? this._quizCallout : null,
       myPoem: a.poem ? { title: a.poem.title, line: a.poem.lines[0], author: a.poem.author } : null,
       teams: a.team === 1 ? m.teamSummary().reverse() : m.teamSummary(),   // HUD: [your team, theirs]
       ink: a.ink / PLAYER.inkMax, inkLow: a.ink < 18 || (this._lowInkFlash > 0), subCost: a.specialActive?.kind === 'barrage' ? 0 : (a.sub || SUB.bomb).inkCost / PLAYER.inkMax, subKind: (a.specialActive?.kind === 'barrage' ? a.specialActive.bomb : a.sub || SUB.bomb).kind,

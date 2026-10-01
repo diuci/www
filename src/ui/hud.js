@@ -305,6 +305,7 @@ export class HUD {
     // 丢词大作战：接诗题板（屏幕下缘，不遮挡战斗视野）+ 我负责的诗
     this.quizEl = h('div', { class: 'iw-quiz is-out' });
     this.myPoemEl = h('div', { class: 'iw-mypoem is-out' });
+    this.quizCallEl = h('div', { class: 'iw-qcall is-out' });
     this.fpsEl = h('div', { class: 'iw-fps' });
     this.bannerLayer = h('div', { class: 'iw-banners' });
     this.countLayer = h('div', { class: 'iw-counts' });
@@ -314,7 +315,7 @@ export class HUD {
     this.zcalls = h('div', { class: 'iw-zcalls' });
 
     el.append(this.vig, this.canvas, this.dmLayer, this.markerLayer, this.cheerLayer, this.ddLayer, this.top, this.sp, this.subBadge, this.turfEl, this.feedEl, this.xh,
-      this.kcards, this.callouts, this.zcalls, this.quizEl, this.myPoemEl, this.promptEl, this.mapDim, this.map, this.fpsEl, this.countLayer, this.bannerLayer, this.splatLayer, this.jnote, this.poisonVig, this.statusEl);
+      this.kcards, this.callouts, this.zcalls, this.quizEl, this.myPoemEl, this.quizCallEl, this.promptEl, this.mapDim, this.map, this.fpsEl, this.countLayer, this.bannerLayer, this.splatLayer, this.jnote, this.poisonVig, this.statusEl);
     this.root.appendChild(el);
 
     // judge + splatted + lineup live outside the hideable HUD so they survive setVisible(false)
@@ -382,6 +383,7 @@ export class HUD {
     this._updPrompt(this.boss.on ? this.boss.prompt(f.prompt) : f.prompt);
     this._updQuiz(f.quiz, f.quizVoice);   // 丢词大作战：接诗题板（含语音指示）
     this._updMyPoem(f.myPoem);      // 丢词大作战：我负责的诗
+    this._updQuizCallout(f.quizCallout);   // 丢词大作战：答对时全队可见的「好句！」
     this._updFps(f.fps, dt);
     this._updZones(f.zones, dt);
     this.boss.update(dt);
@@ -1982,6 +1984,28 @@ export class HUD {
     L.myPoem = p.line;
     this.myPoemEl.innerHTML = `<small>我的诗 · ${esc(p.title)}</small>${esc(p.line)}`;
     this.myPoemEl.classList.remove('is-out');
+  }
+
+  // 答对时的「好句！XX 接上了「…」」大字（全队可见，3 秒后自动消失）
+  _updQuizCallout(c) {
+    const L = this._L;
+    if (!c) {
+      if (L.quizCall) { L.quizCall = null; this.quizCallEl.classList.add('is-out'); }
+      return;
+    }
+    const sig = c.name + '|' + c.text;
+    if (L.quizCall === sig) return;
+    L.quizCall = sig;
+    this.quizCallEl.innerHTML =
+      `<div class="iw-qcall__head">好句！</div>` +
+      `<div class="iw-qcall__who"><b>${esc(c.name)}</b> 接上了「${esc(c.text)}」</div>` +
+      `<div class="iw-qcall__team" style="background:${c.team === 0 ? 'var(--a)' : 'var(--b)'}">全队大招 +</div>`;
+    this.quizCallEl.classList.remove('is-out');
+    this.quizCallEl.animate(
+      [{ transform: 'translate(-50%,-50%) scale(.5)', opacity: 0 },
+        { transform: 'translate(-50%,-50%) scale(1.12)', opacity: 1, offset: 0.6 },
+        { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 }],
+      { duration: 520, easing: 'cubic-bezier(.34,1.56,.64,1)' });
   }
 
   _updFps(fps, dt) {

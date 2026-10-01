@@ -54,6 +54,36 @@
 .iw-quiz__mic i:nth-child(3) { height: 65%; animation-delay: .36s; }
 @keyframes iw-mic { 50% { transform: scaleY(.42); opacity: .6; } }
 
+/* 答对时的「好句！XX 接上了「…」」大字：屏幕中上部，全队可见 */
+.iw-qcall {
+  position: absolute; left: 50%; top: 30%;
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * .5);
+  padding: 0; pointer-events: none; text-align: center;
+  transition: opacity .25s;
+}
+.iw-qcall.is-out { opacity: 0; }
+.iw-qcall__head {
+  font: 400 calc(var(--u) * 4.2) / 1 var(--font-display);
+  color: var(--hv, #ccff00);
+  -webkit-text-stroke: .14em var(--k); paint-order: stroke fill;
+  text-shadow: 0 calc(var(--u) * .4) 0 var(--k);
+  letter-spacing: .04em;
+}
+.iw-qcall__who {
+  padding: calc(var(--u) * .45) calc(var(--u) * 1.1);
+  border-radius: 999px; background: rgba(14, 11, 22, .86);
+  font: 700 calc(var(--u) * 1.15) / 1.2 var(--font-ui); color: #fff;
+  white-space: nowrap;
+}
+.iw-qcall__who b { color: var(--hv, #ccff00); }
+.iw-qcall__team {
+  padding: calc(var(--u) * .3) calc(var(--u) * .8) calc(var(--u) * .32);
+  border-radius: .4em; color: var(--k);
+  font: 900 calc(var(--u) * .68) / 1 var(--font-ui); letter-spacing: .1em;
+  rotate: -2deg; box-shadow: 0 0 0 2px var(--k);
+}
+
 /* 我负责的诗：常驻小卡，放在题板上方 */
 .iw-mypoem {
   position: absolute; left: 50%; bottom: calc(var(--u) * 5.4);
