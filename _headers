@@ -1,0 +1,9 @@
+# 丢词大作战 — 缓存策略：代码每次都校验（改动立刻生效），静态资源长缓存。
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
