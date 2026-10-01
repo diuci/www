@@ -1962,18 +1962,52 @@ export class HUD {
     const sig = q.ask + '|' + q.options.map((o) => o.text).join('|') + '|' + (voice ? 'v' : '');
     if (L.quizSig !== sig) {
       L.quizSig = sig;
+      // 上句逐字掉落：每个字一个 span，用 --i 错开动画延迟，做出"咚咚咚咚咚掉下来"的效果
+      const chars = [...q.ask].map((ch, i) =>
+        `<span class="iw-quiz__ch" style="--i:${i}">${esc(ch)}</span>`).join('');
       const opts = q.options.map((o) => `<span class="iw-quiz__opt"><b>${o.i + 1}</b>${esc(o.text)}</span>`).join('');
       // 语音开启时显示"正在听"的呼吸点，让玩家知道可以念出来
       const mic = voice ? '<span class="iw-quiz__mic"><i></i><i></i><i></i></span>' : '';
-      this.quizEl.innerHTML = `<div class="iw-quiz__ask"><small>接下句</small>${esc(q.ask)}${mic}</div>` +
+      this.quizEl.innerHTML =
+        `<div class="iw-quiz__ask"><small>接下句</small><span class="iw-quiz__line">${chars}</span>${mic}</div>` +
         `<div class="iw-quiz__opts">${opts}</div>` +
         `<div class="iw-quiz__bar"><i style="transform:scaleX(1)"></i></div>`;
-      this.quizEl.classList.remove('is-out');
+      this.quizEl.classList.remove('is-out', 'is-solved');
       this.quizEl.animate([{ transform: 'translateX(-50%) translateY(18px)', opacity: 0 }, { transform: 'translateX(-50%) translateY(0)', opacity: 1 }],
         { duration: 320, easing: 'cubic-bezier(.34,1.56,.64,1)' });
     }
     const bar = this.quizEl.querySelector('.iw-quiz__bar > i');
     if (bar) bar.style.transform = `scaleX(${Math.max(0, Math.min(1, q.left / q.limit)).toFixed(3)})`;
+  }
+
+  // 答对的那一刻：屏幕上方的诗句「砰」地炸开，字四散消失，只在地面留下痕迹
+  _burstQuiz() {
+    const el = this.quizEl;
+    const line = el && el.querySelector('.iw-quiz__line');
+    if (!line || el.classList.contains('is-solved')) return;
+    el.classList.add('is-solved');
+    // 每个字朝不同方向飞散 + 放大淡出（--a 是角度、--d 是距离）
+    [...line.querySelectorAll('.iw-quiz__ch')].forEach((ch, i) => {
+      const a = (i / Math.max(1, line.children.length)) * 360 + (Math.random() * 40 - 20);
+      ch.style.setProperty('--a', `${a}deg`);
+      ch.style.setProperty('--d', `${90 + Math.random() * 130}px`);
+      ch.style.setProperty('--r', `${(Math.random() * 2 - 1) * 90}deg`);
+      ch.classList.add('is-burst');
+    });
+    // 炸开的墨点
+    const splat = document.createElement('div');
+    splat.className = 'iw-quiz__splat';
+    splat.innerHTML = splatSVG({ seed: (Math.random() * 99) | 0, cls: 'iw-fself', r: 70, arms: 12, drops: 10 });
+    el.appendChild(splat);
+    // 停顿一拍再收起来，给玩家看清"炸了"
+    setTimeout(() => { if (this.quizEl === el) el.classList.add('is-out'); }, 620);
+    setTimeout(() => {
+      if (this.quizEl === el && el.classList.contains('is-solved')) {
+        el.classList.remove('is-solved'); el.innerHTML = '';
+        // 清掉签名，这样下一题一定会重新逐字掉落
+        this._L.quizSig = null;
+      }
+    }, 1000);
   }
 
   // 常驻显示"我这一句"，让玩家随时知道自己在写什么

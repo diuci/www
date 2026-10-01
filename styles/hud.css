@@ -26,6 +26,44 @@
   color: #fff; letter-spacing: .02em;
   -webkit-text-stroke: .04em rgba(0, 0, 0, .35); paint-order: stroke fill;
 }
+/* 逐字掉落：每个字一个 span，用 --i 错开延迟，从上往下「咚咚咚」砸进来 */
+.iw-quiz__line { display: inline-flex; gap: .1em; }
+.iw-quiz__ch {
+  display: inline-block;
+  animation: iw-quiz-drop .42s cubic-bezier(.34,1.7,.5,1) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+@keyframes iw-quiz-drop {
+  0%   { transform: translateY(-2.6em) scale(1.5) rotate(-9deg); opacity: 0; }
+  60%  { transform: translateY(.1em) scale(.94) rotate(2deg); opacity: 1; }
+  100% { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+}
+/* 答对：字四散炸开 + 放大淡出，只留地面痕迹 */
+.iw-quiz__ch.is-burst {
+  animation: iw-quiz-burst .62s cubic-bezier(.2,.7,.3,1) forwards;
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+@keyframes iw-quiz-burst {
+  0%   { transform: translate(0,0) scale(1) rotate(0); opacity: 1; }
+  22%  { transform: translate(0,0) scale(1.5) rotate(0); opacity: 1; filter: brightness(2.2); }
+  100% { transform: translate(calc(cos(var(--a,0deg)) * var(--d,110px)), calc(sin(var(--a,0deg)) * var(--d,110px))) scale(.3) rotate(var(--r,0deg)); opacity: 0; }
+}
+/* 炸开时的墨点 */
+.iw-quiz__splat {
+  position: absolute; left: 50%; top: 42%;
+  width: calc(var(--u) * 15); height: calc(var(--u) * 15);
+  transform: translate(-50%, -50%); pointer-events: none;
+  color: var(--a, #ff8a14);
+  animation: iw-quiz-splat .62s cubic-bezier(.2,.8,.3,1) forwards;
+}
+.iw-quiz__splat svg { width: 100%; height: 100%; }
+@keyframes iw-quiz-splat {
+  0%   { transform: translate(-50%,-50%) scale(.15); opacity: 0; }
+  25%  { transform: translate(-50%,-50%) scale(1.06); opacity: .95; }
+  100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; }
+}
+.iw-quiz.is-solved .iw-quiz__opts,
+.iw-quiz.is-solved .iw-quiz__bar { opacity: .25; transition: opacity .2s; }
 .iw-quiz__ask small {
   flex: none; padding: .25em .5em .22em; border-radius: .35em;
   background: var(--hv, #ccff00); color: #15121c;

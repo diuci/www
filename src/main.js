@@ -539,6 +539,8 @@ class Game {
     if (ok) {
       // 屏幕中央先炸一句「好句！」（这是答对的高光时刻），随后跟上是谁接上了哪一句
       this.hud?.banner?.('special', '好句！');
+      // 屏幕上方的诗句「砰」地炸开，字四散消失——只在地面留下痕迹
+      this.hud?._burstQuiz?.();
       // 全队可见：谁接上了哪一句（这是"表演感"的关键）
       this.hud?.feed?.({ text: `好句！${name} 接上「${q.options[q.correct].text}」 全队大招 +`, color: G.teamHex[team ?? 0], kind: 'ally' });
       G.audio?.play('special_ready', { volume: 0.85 });
