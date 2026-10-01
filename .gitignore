@@ -1,0 +1,6 @@
+﻿songs/**/*.mp3
+songs/**/*.m4a
+songs/**/*.ogg
+songs/**/*.wav
+songs/manifest.json
+.DS_Store
