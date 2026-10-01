@@ -298,7 +298,18 @@ export function registerMarinaVessels(D, H) {
     });
   }
   // Place text on a plane: (x,y,z) = baseline centre, ry turns the +Z-facing text (0 → faces +Z, PI → faces -Z …)
+  //
+  // 中文：这套 FONT 笔画表只有拉丁字母（textGeo 里 FONT[ch] 查不到会 continue 静默跳过），
+  // 所以含汉字的串改走图集贴图（和 props-marina-dock.js 的 letters() 同一套机制）。
   function text(B, str, h, c, x, y, z, o = {}) {
+    if (/[\u4e00-\u9fff]/.test(str)) {
+      const uv = H.cjkUV(str, { color: o.cjkColor ?? '#2b2b33', bg: o.cjkBg ?? null, size: 64 });
+      if (!uv) return;
+      const aspect = H.cjkAspect(str);
+      const w = h * aspect, hh = h * 1.6;
+      B.add(ns(B, o.mat || 'paint'), H.plane(w, hh), c, x, y + hh * 0.3, z, { ry: o.ry ?? 0, rx: o.rx ?? 0, rz: o.rz ?? 0, uv });
+      return;
+    }
     B.add(ns(B, o.mat || 'paint'), textGeo(str, h, o), c, x, y, z, { ry: o.ry ?? 0, rx: o.rx ?? 0, rz: o.rz ?? 0 });
   }
 
@@ -458,8 +469,8 @@ export function registerMarinaVessels(D, H) {
       }
       // --- livery (reads from the fuel dock): HALYARD + home port at the +X end, Kraken roundel + KRAKEN LINES on
       //     the -X half, draft marks at both ends. Text faces -Z (ry = PI) and runs toward -X for a viewer at -Z.
-      text(B, 'HALYARD', 0.46, C.white, 9.6, -0.08, FZ, { ry: PI, weight: 0.16 });
-      text(B, 'INKWAVE', 0.19, C.white, 9.6, -0.5, FZ, { ry: PI, weight: 0.17, spacing: 0.45 });
+      text(B, '索具', 0.46, C.white, 9.6, -0.08, FZ, { ry: PI, weight: 0.16, cjkColor: '#f2eee6' });
+      text(B, '丢词大作战', 0.19, C.white, 9.6, -0.5, FZ, { ry: PI, weight: 0.17, spacing: 0.45, cjkColor: '#f2eee6' });
       const kl = textGeo('KRAKEN LINES', 0.52, { weight: 0.17, depth: 0.014 });
       const klW = kl.userData.width, klX = -8.7;
       B.add('paint', kl, C.white, klX, -0.34, FZ, { ry: PI });
@@ -614,7 +625,7 @@ export function registerMarinaVessels(D, H) {
     B.cyl('gloss', C.white, R + 0.012, 0.012, 0, -0.05, 0, { seg: 18, open: true });
     B.pop();
     B.box('gloss', C.red, 0.1, 0.12, 0.06, x + L / 2 + 0.03, y - R + 0.04, 0.03, { r: 0.015 });   // hydrostatic release
-    text(B, 'LIFERAFT', 0.06, C.navy, x - 0.05, y - 0.03, 0.117, { weight: 0.2, depth: 0.003 });
+    text(B, '救生筏', 0.06, C.navy, x - 0.05, y - 0.03, 0.117, { weight: 0.2, depth: 0.003, cjkColor: '#27304d' });
   }
 
   D.ferry_cabin = {
@@ -657,7 +668,7 @@ export function registerMarinaVessels(D, H) {
             B.cyl('metal', C.black, 0.02, 0.03, x, 0.05, 0.035, { rx: HP, seg: 6 });
           }
           B.pop();
-          text(B, 'HALYARD', 0.12, C.navy, 0, 1.24, 0.003, { weight: 0.19, depth: 0.006 });
+          text(B, '索具', 0.12, C.navy, 0, 1.24, 0.003, { weight: 0.19, depth: 0.006, cjkColor: '#27304d' });
         } else {
           glazing(B, -1.36, 0.26, 0.55, 1.2, 2, { frame: C.white });
           shipDoor(B, 0.82, 0.68, 1.26, C.whiteDk, -1);
@@ -786,8 +797,8 @@ export function registerMarinaVessels(D, H) {
           B.box('metal', '#9a8a4a', 0.07, 0.07, 0.03, hx, 0.8, z + s * 0.585, { r: 0.012 });
           B.tor('metal', C.steel, 0.022, 0.006, hx, 0.85, z + s * 0.585, { rs: 4, ts: 10, arc: PI });
         }
-        text(B, 'LIFEJACKETS', 0.17, C.navy, 0.08, 0.5, z + s * 0.552, { ry: s > 0 ? 0 : PI, weight: 0.18, depth: 0.006 });
-        text(B, '40 ADULT · 10 CHILD', 0.06, C.navy, 0.08, 0.34, z + s * 0.552, { ry: s > 0 ? 0 : PI, weight: 0.2, depth: 0.004 });
+        text(B, '救生衣', 0.17, C.navy, 0.08, 0.5, z + s * 0.552, { ry: s > 0 ? 0 : PI, weight: 0.18, depth: 0.006, cjkColor: '#27304d' });
+        text(B, '成人 40 · 儿童 10', 0.06, C.navy, 0.08, 0.34, z + s * 0.552, { ry: s > 0 ? 0 : PI, weight: 0.2, depth: 0.004, cjkColor: '#27304d' });
       }
       // lifejacket pictograms on both ends (orange vest on white)
       for (const s of [-1, 1]) {
@@ -845,7 +856,7 @@ export function registerMarinaVessels(D, H) {
       B.cyl('gloss', C.white, 0.302, 0.08, -0.45, 0.47, 0.5, { seg: 16, open: true });
       for (let k = 0; k < 3; k++) B.tor('rubber', shade(C.rope, 0.95 + k * 0.03), 0.25 - k * 0.012, 0.03, -0.5, 0.2 + k * 0.055, -0.55, { rx: HP, rs: 5, ts: 18 });
       B.box('paint', C.white, 0.5, 0.18, 0.006, -0.5, 1.2, z1 + 0.03, { r: 0.01 });
-      text(B, 'SPARES', 0.09, C.navy, -0.5, 1.155, z1 + 0.034, { weight: 0.2, depth: 0.004 });
+      text(B, '备件', 0.09, C.navy, -0.5, 1.155, z1 + 0.034, { weight: 0.2, depth: 0.004, cjkColor: '#27304d' });
       // sack truck leaning on the cage
       B.push(-0.99, 0, -0.55, 0, 0, 0.12);
       for (const s of [-1, 1]) B.cyl('metal', C.red, 0.018, 1.2, -0.05, 0.62, s * 0.18, { seg: 8 });
@@ -1066,15 +1077,15 @@ export function registerMarinaVessels(D, H) {
       crateBox(B, cx1 + 0.06, cx2 - 0.04, 0.93, cB, zm + 0.02, cz1 - 0.1, 1.06);
       // stencils on the faces toward the yard (-X) and the ends (±Z)
       B.push(cx0 + 0.05, 0, zm, -HP);
-      text(B, 'NUDGE', 0.12, '#3a3f4a', 0.6, 0.55, 0.004, { weight: 0.2 });
-      text(B, 'SPARES', 0.09, '#3a3f4a', 0.6, 0.38, 0.004, { weight: 0.2, spacing: 0.3 });
-      text(B, 'THIS WAY UP', 0.06, '#3a3f4a', -0.7, 0.62, 0.004, { weight: 0.2, spacing: 0.2 });
+      text(B, '轻放', 0.12, '#3a3f4a', 0.6, 0.55, 0.004, { weight: 0.2, cjkColor: '#3a3f4a' });
+      text(B, '备件', 0.09, '#3a3f4a', 0.6, 0.38, 0.004, { weight: 0.2, spacing: 0.3, cjkColor: '#3a3f4a' });
+      text(B, '此面朝上', 0.06, '#3a3f4a', -0.7, 0.62, 0.004, { weight: 0.2, spacing: 0.2, cjkColor: '#3a3f4a' });
       B.pop();
       B.push(cx1 + 0.075, 0, zm, -HP);
-      text(B, 'HALYARD BOATYARD', 0.09, '#3a3f4a', 0.7, 1.45, 0.004, { weight: 0.2, spacing: 0.2 });
+      text(B, '索具船坞', 0.09, '#3a3f4a', 0.7, 1.45, 0.004, { weight: 0.2, spacing: 0.2, cjkColor: '#3a3f4a' });
       B.pop();
       B.push((cx1 + cx2) / 2, 0, cz0 + 0.065, PI);
-      text(B, 'FRAGILE', 0.08, '#b0473b', 0, 0.62, 0.004, { weight: 0.22, spacing: 0.3 });
+      text(B, '易碎', 0.08, '#b0473b', 0, 0.62, 0.004, { weight: 0.22, spacing: 0.3, cjkColor: '#b0473b' });
       B.pop();
       // rope lashings over the upper crates (down to pallet rings) + a coil left on the lower step
       for (const zz of [cz0 + 0.45, zm - 0.35, zm + 0.4, cz1 - 0.45]) {
@@ -1611,7 +1622,7 @@ export function registerMarinaVessels(D, H) {
       for (const s of [-1, 1]) B.box(ns(B, 'paint'), C.white, HX - 1.18, 0.06, 0.014, s * (HX + 1.18) / 2, 0.69, HZ + 0.007, { r: 0.004 });
       for (const s of [-1, 1]) {
         B.push(s * HX, 0, 0, s * HP);                                              // local +Z = out of this side
-        text(B, 'NUDGE', 0.32, C.white, s * 3.9, 0.8, 0.002, { weight: 0.17 });
+        text(B, '轻放', 0.32, C.white, s * 3.9, 0.8, 0.002, { weight: 0.17, cjkColor: '#f2eee6' });
         // load line (Plimsoll) mark amidships
         B.tor(ns(B, 'paint'), C.white, 0.16, 0.018, -s * 1.3, 1.02, 0.01, { rs: 4, ts: 24 });
         B.box(ns(B, 'paint'), C.white, 0.5, 0.035, 0.012, -s * 1.3, 1.02, 0.01, { r: 0.004 });
@@ -1633,8 +1644,8 @@ export function registerMarinaVessels(D, H) {
       }
       // stern: quarter tyres + name/port left of the ramp
       for (const x of [1.75, 2.55]) tyre(B, -x, 1.72, HZ + 0.09, 'z', 0.9);                      // (+X quarter: yard scaffold)
-      text(B, 'NUDGE', 0.2, C.white, -2.15, 1.0, HZ + 0.002, { weight: 0.18 });
-      text(B, 'INKWAVE', 0.1, C.white, -2.15, 0.82, HZ + 0.002, { weight: 0.2, spacing: 0.4 });
+      text(B, '轻放', 0.2, C.white, -2.15, 1.0, HZ + 0.002, { weight: 0.18, cjkColor: '#f2eee6' });
+      text(B, '丢词大作战', 0.1, C.white, -2.15, 0.82, HZ + 0.002, { weight: 0.2, spacing: 0.4, cjkColor: '#f2eee6' });
       // --- low deck-edge rail (0.36 m), open at the ramp; buff paint
       const railY = DK + 0.36, inset = 0.1;
       const railRuns = !acc ? [
@@ -1894,15 +1905,15 @@ export function registerMarinaVessels(D, H) {
         }
       });
       B.push(XW, 0, 0, -HP);                                                    // west face (toward the Long Pier)
-      text(B, 'SEA SHANTY', 0.26, C.white, 2.75, -0.2, 0.002, { weight: 0.17 });
-      text(B, 'INKWAVE', 0.11, C.white, 2.75, -0.4, 0.002, { weight: 0.2, spacing: 0.4 });
+      text(B, '船工号子', 0.26, C.white, 2.75, -0.2, 0.002, { weight: 0.17, cjkColor: '#f2eee6' });
+      text(B, '丢词大作战', 0.11, C.white, 2.75, -0.4, 0.002, { weight: 0.2, spacing: 0.4, cjkColor: '#f2eee6' });
       B.pop();
       B.push(4.9, 0, -HZ, PI);                                                  // south face (seen from the quay across the slip)
-      text(B, 'SEA SHANTY', 0.3, C.white, 0, -0.18, 0.002, { weight: 0.17 });
-      text(B, 'INKWAVE', 0.12, C.white, 0, -0.42, 0.002, { weight: 0.2, spacing: 0.4 });
+      text(B, '船工号子', 0.3, C.white, 0, -0.18, 0.002, { weight: 0.17, cjkColor: '#f2eee6' });
+      text(B, '丢词大作战', 0.12, C.white, 0, -0.42, 0.002, { weight: 0.2, spacing: 0.4, cjkColor: '#f2eee6' });
       B.pop();
       B.push(XE, 0, 0, HP);                                                      // east face
-      text(B, 'SEA SHANTY', 0.26, C.white, 0, -0.2, 0.002, { weight: 0.17 });
+      text(B, '船工号子', 0.26, C.white, 0, -0.2, 0.002, { weight: 0.17, cjkColor: '#f2eee6' });
       // swim ladder down the east side
       for (const s of [-1, 1]) B.tube('metal', C.galv, [P3(s * 0.22, -1.9, 0.12), P3(s * 0.22, 0.45, 0.12), P3(s * 0.22, 0.62, 0.08), P3(s * 0.22, 0.62, 0.02)], 0.02, { radial: 6 });
       for (let y = -1.35; y < 0.4; y += 0.3) B.cyl('metal', C.galv, 0.016, 0.44, 0, y, 0.12, { rz: HP, seg: 6 });
@@ -2189,7 +2200,7 @@ export function registerMarinaVessels(D, H) {
       B.tube('metal', '#8b949c', [P3(0.32, 0.15, -W / 2 + 0.04), P3(0.32, 1.86, -W / 2 + 0.04), P3(0.32, 1.86, W / 2 - 0.04), P3(0.32, 0.15, W / 2 - 0.04), P3(0.32, 0.15, -W / 2 + 0.04)], 0.025, { radial: 5 });
       B.box('metal', C.black, 0.08, 0.16, 0.1, 0.36, 1.05, W / 2 - 0.12, { r: 0.02 });                   // lock box
       B.box('gloss', C.navy, 0.04, 0.46, 1.2, 0.26, 2.42, 0, { round: true, r: 0.03 });
-      B.push(0.235, 0, 0, -HP); text(B, 'HALYARD MARINA', 0.1, C.white, 0, 2.47, 0.001, { weight: 0.2, depth: 0.004 }); text(B, 'BERTH HOLDERS ONLY', 0.06, C.mustard, 0, 2.3, 0.001, { weight: 0.22, depth: 0.004 }); B.pop();
+      B.push(0.235, 0, 0, -HP); text(B, '索具船坞', 0.1, C.white, 0, 2.47, 0.001, { weight: 0.2, depth: 0.004, cjkColor: '#f2eee6' }); text(B, '仅限泊位租户', 0.06, C.mustard, 0, 2.3, 0.001, { weight: 0.22, depth: 0.004, cjkColor: '#eec35c' }); B.pop();
       });
       // the locked gate is a rail collider (a kid on the quay can't walk through it; shots / ink / squids pass)
       const Wg = (o.width ?? 1.3) / 2 + 0.13;
