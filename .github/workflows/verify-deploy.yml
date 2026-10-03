@@ -11,13 +11,11 @@ name: 校验线上部署
 # 注意：Cloudflare 会在 </body> 后注入 Analytics beacon，
 # 线上 HTML 字节流必然与仓库不同，所以不能用哈希比对，只能核对关键锚点。
 
+# 故意不设 paths 过滤：这个仓库里每个文件都与部署相关，
+# 而且一旦过滤掉本工作流自身，改动校验逻辑时就无法被校验。
 on:
   push:
     branches: [main]
-    paths:
-      - 'index.html'
-      - 'CNAME'
-      - '.nojekyll'
   workflow_dispatch:
 
 permissions:
