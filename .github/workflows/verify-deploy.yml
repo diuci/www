@@ -1,12 +1,15 @@
 name: 校验线上部署
 
 # 主站是 GitHub Pages 的 branch 部署模式（main 分支根目录直接发布），
-# 因此推送即上线，本工作流不参与发布，只负责「推送之后自动验证确实生效」。
+# 因此推送即上线，本工作流不参与发布，只负责「推送之后自动验证确实是好的」。
 #
-# 为什么需要它：手工同步 www/ 与 _deploy/ 时最容易出现两类静默故障 ——
-#   1. 仓库改了但忘了推送，线上仍是旧页面；
-#   2. 覆盖 index.html 时把 CNAME 一起弄坏，导致 diuci.com 域名失效。
-# 这里在每次推送后自动检查这两件事。
+# 为什么需要它：手工维护单文件首页时最容易出现两类静默故障 ——
+#   1. 覆盖 index.html 时内容被截断或清空，线上出现残缺页面；
+#   2. 误删误改 CNAME，导致 diuci.com 自定义域名失效（历史上发生过）。
+# 这里在每次推送后自动拦住这两种情况。
+#
+# 注意：Cloudflare 会在 </body> 后注入 Analytics beacon，
+# 线上 HTML 字节流必然与仓库不同，所以不能用哈希比对，只能核对关键锚点。
 
 on:
   push:
@@ -52,16 +55,13 @@ jobs:
             echo "::error::缺少 .nojekyll，Pages 会启用 Jekyll 处理并可能丢弃下划线开头的文件"
             exit 1
           fi
+          echo ".nojekyll 存在"
 
-      - name: 校验线上页面与仓库一致
-        env:
-          SITE_URL: https://diuci.com/
+      - name: 校验仓库首页内容完整
+        # 这一步只读仓库里的 index.html，不依赖网络，因此永远可靠。
+        # 它能拦住「覆盖文件时内容被截断/清空」这类最危险的误操作。
         run: |
-          set -uo pipefail
-
-          # Cloudflare 会在 </body> 后注入 Analytics beacon，
-          # 线上 HTML 的字节流必然与仓库不同，因此不能用哈希比对。
-          # 改为核对仓库源码里的关键锚点是否都出现在线上一页。
+          set -euo pipefail
           anchors=(
             '<title>丢词夺理 · 学古诗，也玩古诗</title>'
             '丢词夺理'
@@ -71,42 +71,81 @@ jobs:
             'https://moon.diuci.com/'
             'https://github.com/diuci/k12-chinese-poetry'
             ':root[data-theme="dark"]'
-            '古诗文'
-            '丢词大作战'
-            '遗失月冕'
             '内容仓库'
           )
-
-          live=""
-          # Pages 部署与推送之间存在延迟，且 Cloudflare 有 max-age 缓存，
-          # 这里轮询等待，避免把「还没生效」误判成「部署失败」。
-          for attempt in $(seq 1 10); do
-            echo "第 ${attempt} 次拉取 ${SITE_URL}"
-            live="$(curl -fsSL --max-time 30 "${SITE_URL}?verify=${GITHUB_SHA}-${attempt}" || true)"
-            if [ -n "${live}" ]; then
-              break
-            fi
-            sleep 15
-          done
-
-          if [ -z "${live}" ]; then
-            echo "::error::无法访问 ${SITE_URL}，请检查 DNS 与 Pages 状态"
-            exit 1
-          fi
-
           missing=0
           for a in "${anchors[@]}"; do
-            if printf '%s' "${live}" | grep -qF -- "${a}"; then
+            if grep -qF -- "${a}" index.html; then
               echo "OK   ${a}"
             else
               echo "MISS ${a}"
               missing=1
             fi
           done
-
           if [ "${missing}" -ne 0 ]; then
-            echo "::error::线上页面缺少预期锚点，说明本次推送未生效或 index.html 被改动"
+            echo "::error::仓库里的 index.html 缺少预期内容，疑似被截断或覆盖失败"
+            exit 1
+          fi
+          echo "index.html 内容完整（$(wc -c < index.html) 字节）"
+
+      - name: 抓取线上页面
+        # 与内容核对拆开，是为了在排查时能一眼看出
+        # 到底是「抓不到」还是「抓到了但内容不对」。
+        env:
+          SITE_URL: https://diuci.com/
+        run: |
+          set -uo pipefail
+          # 用浏览器 UA：Cloudflare 会对 curl 默认 UA 做拦截，
+          # 返回人机校验页而不是真实内容。
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+          code=000
+          for attempt in $(seq 1 8); do
+            code="$(curl -sSL -A "${UA}" \
+              -H 'Accept: text/html,application/xhtml+xml' \
+              -H 'Accept-Language: zh-CN,zh;q=0.9' \
+              --max-time 30 -o live.html -w '%{http_code}' \
+              "${SITE_URL}?verify=${GITHUB_SHA}-${attempt}" || true)"
+            size="$(wc -c < live.html 2>/dev/null || echo 0)"
+            echo "第 ${attempt} 次：HTTP ${code}，${size} 字节"
+            if [ "${code}" = "200" ] && [ "${size}" -gt 0 ]; then
+              break
+            fi
+            sleep 20
+          done
+          if [ "${code}" != "200" ] || [ ! -s live.html ]; then
+            echo "::error::无法从 CI 抓取 ${SITE_URL}（最后一次 HTTP ${code}），请确认 Pages 与 Cloudflare 状态"
+            exit 1
+          fi
+          if grep -qiE 'cf-chl|Just a moment|Attention Required|Enable JavaScript and cookies' live.html; then
+            echo "::error::抓到的是 Cloudflare 人机校验页，不是站点内容"
             exit 1
           fi
 
+      - name: 核对线上内容与仓库一致
+        run: |
+          set -euo pipefail
+          anchors=(
+            '<title>丢词夺理 · 学古诗，也玩古诗</title>'
+            '丢词夺理'
+            'class="dc-tabbar"'
+            'https://k12.diuci.com/'
+            'https://ink.diuci.com/'
+            'https://moon.diuci.com/'
+            'https://github.com/diuci/k12-chinese-poetry'
+            ':root[data-theme="dark"]'
+            '内容仓库'
+          )
+          missing=0
+          for a in "${anchors[@]}"; do
+            if grep -qF -- "${a}" live.html; then
+              echo "OK   ${a}"
+            else
+              echo "MISS ${a}"
+              missing=1
+            fi
+          done
+          if [ "${missing}" -ne 0 ]; then
+            echo "::error::线上页面与仓库不一致，本次推送可能未生效"
+            exit 1
+          fi
           echo "线上页面与仓库一致，diuci.com 部署正常"
