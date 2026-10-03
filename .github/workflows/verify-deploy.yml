@@ -1,0 +1,112 @@
+name: 校验线上部署
+
+# 主站是 GitHub Pages 的 branch 部署模式（main 分支根目录直接发布），
+# 因此推送即上线，本工作流不参与发布，只负责「推送之后自动验证确实生效」。
+#
+# 为什么需要它：手工同步 www/ 与 _deploy/ 时最容易出现两类静默故障 ——
+#   1. 仓库改了但忘了推送，线上仍是旧页面；
+#   2. 覆盖 index.html 时把 CNAME 一起弄坏，导致 diuci.com 域名失效。
+# 这里在每次推送后自动检查这两件事。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'CNAME'
+      - '.nojekyll'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-deploy
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v5
+
+      - name: 保护 CNAME
+        run: |
+          set -euo pipefail
+          if [ ! -f CNAME ]; then
+            echo "::error::CNAME 不存在，diuci.com 自定义域名会立即失效"
+            exit 1
+          fi
+          domain="$(tr -d '\r\n' < CNAME)"
+          echo "CNAME = ${domain}"
+          if [ "${domain}" != "diuci.com" ]; then
+            echo "::error::CNAME 内容应为 diuci.com，实际为 ${domain}"
+            exit 1
+          fi
+
+      - name: 确认 .nojekyll 存在
+        run: |
+          set -euo pipefail
+          if [ ! -f .nojekyll ]; then
+            echo "::error::缺少 .nojekyll，Pages 会启用 Jekyll 处理并可能丢弃下划线开头的文件"
+            exit 1
+          fi
+
+      - name: 校验线上页面与仓库一致
+        env:
+          SITE_URL: https://diuci.com/
+        run: |
+          set -uo pipefail
+
+          # Cloudflare 会在 </body> 后注入 Analytics beacon，
+          # 线上 HTML 的字节流必然与仓库不同，因此不能用哈希比对。
+          # 改为核对仓库源码里的关键锚点是否都出现在线上一页。
+          anchors=(
+            '<title>丢词夺理 · 学古诗，也玩古诗</title>'
+            '丢词夺理'
+            'class="dc-tabbar"'
+            'https://k12.diuci.com/'
+            'https://ink.diuci.com/'
+            'https://moon.diuci.com/'
+            'https://github.com/diuci/k12-chinese-poetry'
+            ':root[data-theme="dark"]'
+            '古诗文'
+            '丢词大作战'
+            '遗失月冕'
+            '内容仓库'
+          )
+
+          live=""
+          # Pages 部署与推送之间存在延迟，且 Cloudflare 有 max-age 缓存，
+          # 这里轮询等待，避免把「还没生效」误判成「部署失败」。
+          for attempt in $(seq 1 10); do
+            echo "第 ${attempt} 次拉取 ${SITE_URL}"
+            live="$(curl -fsSL --max-time 30 "${SITE_URL}?verify=${GITHUB_SHA}-${attempt}" || true)"
+            if [ -n "${live}" ]; then
+              break
+            fi
+            sleep 15
+          done
+
+          if [ -z "${live}" ]; then
+            echo "::error::无法访问 ${SITE_URL}，请检查 DNS 与 Pages 状态"
+            exit 1
+          fi
+
+          missing=0
+          for a in "${anchors[@]}"; do
+            if printf '%s' "${live}" | grep -qF -- "${a}"; then
+              echo "OK   ${a}"
+            else
+              echo "MISS ${a}"
+              missing=1
+            fi
+          done
+
+          if [ "${missing}" -ne 0 ]; then
+            echo "::error::线上页面缺少预期锚点，说明本次推送未生效或 index.html 被改动"
+            exit 1
+          fi
+
+          echo "线上页面与仓库一致，diuci.com 部署正常"

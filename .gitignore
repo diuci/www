@@ -1,6 +1,4 @@
-﻿songs/**/*.mp3
-songs/**/*.m4a
-songs/**/*.ogg
-songs/**/*.wav
-songs/manifest.json
+# 本地验收截图，不属于线上内容
+_shots/
+
 .DS_Store
