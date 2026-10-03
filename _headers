@@ -1,9 +1,5 @@
-# 丢词大作战 — 缓存策略：代码每次都校验（改动立刻生效），静态资源长缓存。
+# diuci.com 首页 — 单文件页面，HTML 本身不缓存以保证更新立刻生效。
 /*
   Cache-Control: public, max-age=0, must-revalidate
-
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-
-/vendor/*
-  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

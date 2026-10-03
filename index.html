@@ -2,34 +2,548 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>丢词大作战</title>
-<meta name="description" content="丢词大作战：4v4 汉字涂地射击。用古诗词占点，把好词好句铺满全场，涂得多的那队获胜。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4c8 0 14 7 14 16 0 6-2 9-2 13 0 5 6 6 6 12 0 4-3 6-6 6-4 0-5-4-8-4s-2 9-4 9-2-9-4-9-4 4-8 4c-3 0-6-2-6-6 0-6 6-7 6-12 0-4-2-7-2-13C18 11 24 4 32 4z' fill='%23ff8a14'/%3E%3Ccircle cx='26' cy='22' r='4' fill='%23fff'/%3E%3Ccircle cx='38' cy='22' r='4' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="preload" href="assets/fonts/TitanOne-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/Rubik-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles/ui.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>丢字 diuci.com · 学古诗，也玩古诗</title>
+<meta name="description" content="课标 207 篇 + 教材拓展 46 篇，共 253 篇古诗文。阅读、对战游戏、探索故事，给孩子的中文古诗词乐园。">
+<meta name="theme-color" content="#f4ede0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c8442e'/%3E%3Ctext x='32' y='45' font-size='40' text-anchor='middle' fill='%23f7f1e3' font-family='serif'%3E字%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1020; user-select: none; -webkit-user-select: none; }
-  #app { position: fixed; inset: 0; }
-  #app canvas { display: block; width: 100%; height: 100%; outline: none; }
-  #ui-root { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
-  #fade { position: fixed; inset: 0; background: #0d1020; opacity: 1; pointer-events: all; z-index: 50; transition: opacity 600ms ease; }
-  #boot-error { display: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 60; color: #fff; font: 600 16px/1.4 system-ui, sans-serif; background: #c0263d; padding: 16px 20px; border-radius: 12px; max-width: 520px; }
+:root{
+  --paper:#f4ede0;
+  --paper-2:#eae0cd;
+  --ink:#241f1a;
+  --ink-soft:#5b5147;
+  --ink-faint:#8a7f72;
+  --cinnabar:#c8442e;
+  --cinnabar-deep:#a33524;
+  --celadon:#5f8d7d;
+  --indigo:#3c5a78;
+  --gold:#c08a2e;
+  --line:#d8cbb4;
+  --shadow:0 2px 0 rgba(36,31,26,.06), 0 12px 32px -12px rgba(36,31,26,.18);
+  --radius:14px;
+  --serif:"Noto Serif SC",'Songti SC','STSong',serif;
+  --round:"ZCOOL KuaiLe","Noto Serif SC",sans-serif;
+  --brush:"ZCOOL XiaoWei","Noto Serif SC",serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--serif);
+  color:var(--ink);
+  background:var(--paper);
+  line-height:1.75;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* 宣纸纹理：多层噪声叠加 */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -8%, rgba(192,138,46,.10), transparent 62%),
+    radial-gradient(ellipse 70% 50% at 100% 8%, rgba(200,68,46,.07), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 0% 30%, rgba(60,90,120,.06), transparent 62%);
+}
+.wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 24px}
+
+/* ── 导航 ── */
+nav{
+  position:sticky;top:0;z-index:60;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(244,237,224,.82);
+  border-bottom:1px solid var(--line);
+}
+.nav-in{display:flex;align-items:center;gap:28px;height:66px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink)}
+.seal{
+  width:40px;height:40px;flex:0 0 40px;border-radius:9px;
+  background:linear-gradient(155deg,var(--cinnabar),var(--cinnabar-deep));
+  color:#f7f1e3;display:grid;place-items:center;
+  font-family:var(--round);font-size:25px;line-height:1;
+  box-shadow:0 3px 10px -2px rgba(200,68,46,.5);
+  transform:rotate(-4deg);
+}
+.brand-t{font-family:var(--round);font-size:23px;letter-spacing:.06em}
+.brand-s{font-size:11px;color:var(--ink-faint);letter-spacing:.22em;margin-top:-3px}
+.nav-links{display:flex;gap:26px;margin-left:auto;list-style:none}
+.nav-links a{
+  color:var(--ink-soft);text-decoration:none;font-size:14.5px;
+  position:relative;padding:4px 0;transition:color .22s;
+}
+.nav-links a::after{
+  content:'';position:absolute;left:0;bottom:0;width:0;height:2px;
+  background:var(--cinnabar);transition:width .28s cubic-bezier(.4,0,.2,1);
+}
+.nav-links a:hover{color:var(--cinnabar)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{
+  font-family:var(--round);font-size:15px;color:#f7f1e3;background:var(--ink);
+  padding:9px 20px;border-radius:999px;text-decoration:none;
+  box-shadow:0 4px 12px -4px rgba(36,31,26,.5);transition:transform .2s,box-shadow .2s;
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 18px -6px rgba(36,31,26,.6)}
+
+/* ── 首屏 ── */
+.hero{position:relative;padding:88px 0 72px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:60px;align-items:center}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:12.5px;letter-spacing:.16em;color:var(--cinnabar);
+  background:rgba(200,68,46,.07);border:1px solid rgba(200,68,46,.2);
+  padding:6px 15px;border-radius:999px;margin-bottom:26px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--cinnabar);animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+
+h1{
+  font-family:var(--round);font-size:clamp(44px,6.4vw,80px);
+  line-height:1.1;letter-spacing:.01em;margin-bottom:8px;
+}
+h1 .accent{color:var(--cinnabar);position:relative;display:inline-block}
+h1 .accent::after{
+  content:'';position:absolute;left:-2px;right:-2px;bottom:.1em;height:.36em;
+  background:rgba(192,138,46,.26);z-index:-1;border-radius:3px;
+  transform:skewX(-11deg);
+}
+.hero-sub{
+  font-family:var(--brush);font-size:clamp(19px,2.3vw,25px);
+  color:var(--ink-soft);margin:20px 0 26px;letter-spacing:.04em;
+}
+.hero-sub b{color:var(--cinnabar);font-weight:400}
+.hero-p{font-size:16px;color:var(--ink-soft);max-width:44ch;margin-bottom:34px}
+.hero-btns{display:flex;flex-wrap:wrap;gap:14px}
+.btn{
+  font-family:var(--round);font-size:16.5px;text-decoration:none;
+  padding:15px 32px;border-radius:999px;display:inline-flex;align-items:center;gap:9px;
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s,background .22s;
+}
+.btn-p{background:var(--cinnabar);color:#fdf8ee;box-shadow:0 6px 18px -6px rgba(200,68,46,.65)}
+.btn-p:hover{background:var(--cinnabar-deep);transform:translateY(-3px) scale(1.02);box-shadow:0 12px 26px -8px rgba(200,68,46,.7)}
+.btn-s{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn-s:hover{background:var(--ink);color:var(--paper);transform:translateY(-3px)}
+
+.hero-stats{display:flex;gap:34px;margin-top:46px;padding-top:30px;border-top:1px dashed var(--line)}
+.stat b{display:block;font-family:var(--round);font-size:31px;color:var(--cinnabar);line-height:1.15}
+.stat span{font-size:12.5px;color:var(--ink-faint);letter-spacing:.1em}
+
+/* 首屏右侧：旋转诗词卡 */
+.hero-art{position:relative;height:452px}
+.card{
+  position:absolute;width:290px;padding:26px 24px 22px;
+  background:linear-gradient(168deg,#fdf8ec,#f3e9d5);
+  border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  transition:transform .5s cubic-bezier(.34,1.4,.64,1),box-shadow .5s;
+  cursor:default;
+}
+.card::before{
+  content:'';position:absolute;inset:7px;border:1px solid rgba(200,68,46,.16);
+  border-radius:9px;pointer-events:none;
+}
+.card-t{font-family:var(--round);font-size:25px;margin-bottom:3px}
+.card-a{font-size:12.5px;color:var(--ink-faint);letter-spacing:.14em;margin-bottom:15px}
+.card-l{font-family:var(--brush);font-size:20.5px;line-height:2;color:var(--ink);letter-spacing:.05em}
+.card-g{font-family:var(--round);font-size:11.5px;color:var(--cinnabar);margin-top:15px;letter-spacing:.1em}
+.card-1{top:6px;left:6px;transform:rotate(-7deg);z-index:3}
+.card-2{top:96px;left:96px;transform:rotate(4.5deg);z-index:4}
+.card-3{top:196px;left:24px;transform:rotate(-2.5deg);z-index:5}
+.card-1:hover{transform:rotate(-10deg) translateY(-8px) scale(1.03);z-index:9}
+.card-2:hover{transform:rotate(8deg) translateY(-8px) scale(1.03);z-index:9}
+.card-3:hover{transform:rotate(-4deg) translateY(-8px) scale(1.03);z-index:9}
+.ink-splat{
+  position:absolute;border-radius:50%;filter:blur(28px);opacity:.5;z-index:0;
+}
+.sp-1{width:210px;height:210px;background:radial-gradient(circle,rgba(200,68,46,.3),transparent 68%);top:24px;right:-16px}
+.sp-2{width:180px;height:180px;background:radial-gradient(circle,rgba(60,90,120,.24),transparent 68%);bottom:12px;left:12px}
+
+/* ── 入口卡 ── */
+.sec{padding:76px 0;scroll-margin-top:66px}
+.sec-head{text-align:center;margin-bottom:46px}
+.sec-k{
+  font-family:var(--round);font-size:13px;letter-spacing:.3em;color:var(--cinnabar);
+  display:block;margin-bottom:12px;
+}
+h2{font-family:var(--round);font-size:clamp(29px,3.7vw,43px);line-height:1.28;margin-bottom:14px}
+.sec-p{color:var(--ink-soft);font-size:16px;max-width:52ch;margin:0 auto}
+
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:26px}
+.entry{
+  position:relative;display:block;text-decoration:none;color:inherit;
+  background:linear-gradient(168deg,#fdf9ef,#f2e8d4);
+  border:1px solid var(--line);border-radius:18px;
+  padding:32px 30px 28px;overflow:hidden;
+  transition:transform .38s cubic-bezier(.34,1.4,.64,1),box-shadow .38s,border-color .38s;
+}
+.entry::after{
+  content:'';position:absolute;right:-40px;top:-40px;width:170px;height:170px;
+  border-radius:50%;opacity:0;transition:opacity .42s,transform .42s;
+  transform:scale(.6);
+}
+.entry:hover{transform:translateY(-8px);box-shadow:0 22px 46px -20px rgba(36,31,26,.4);border-color:transparent}
+.entry:hover::after{opacity:1;transform:scale(1)}
+.entry-ico{
+  width:60px;height:60px;border-radius:15px;display:grid;place-items:center;
+  font-family:var(--round);font-size:31px;margin-bottom:20px;color:#fdf8ee;
+  position:relative;z-index:2;box-shadow:0 6px 16px -6px rgba(0,0,0,.35);
+}
+.entry h3{font-family:var(--round);font-size:25px;margin-bottom:9px;position:relative;z-index:2}
+.entry p{font-size:14.8px;color:var(--ink-soft);margin-bottom:18px;position:relative;z-index:2;max-width:40ch}
+.entry-go{
+  display:inline-flex;align-items:center;gap:7px;font-family:var(--round);
+  font-size:14.5px;color:var(--cinnabar);position:relative;z-index:2;
+  transition:gap .28s;
+}
+.entry:hover .entry-go{gap:13px}
+.tag{
+  display:inline-block;font-size:11.5px;letter-spacing:.09em;padding:3.5px 11px;
+  border-radius:999px;background:rgba(36,31,26,.07);color:var(--ink-soft);
+  margin:0 6px 15px 0;position:relative;z-index:2;
+}
+.e-a::after{background:radial-gradient(circle,rgba(200,68,46,.14),transparent 70%)}
+.e-b::after{background:radial-gradient(circle,rgba(60,90,120,.15),transparent 70%)}
+.e-c::after{background:radial-gradient(circle,rgba(192,138,46,.17),transparent 70%)}
+.e-d::after{background:radial-gradient(circle,rgba(95,141,125,.16),transparent 70%)}
+.i-a{background:linear-gradient(150deg,#d4553c,var(--cinnabar-deep))}
+.i-b{background:linear-gradient(150deg,#4e7595,var(--indigo))}
+.i-c{background:linear-gradient(150deg,#d3a04a,var(--gold))}
+.i-d{background:linear-gradient(150deg,#77a494,var(--celadon))}
+
+/* ── 学段 ── */
+.stages{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.stage{
+  display:block;text-align:center;text-decoration:none;color:var(--ink);
+  padding:32px 22px;border-radius:16px;
+  background:rgba(255,253,247,.62);border:1px solid var(--line);
+  transition:transform .3s,box-shadow .3s,background .3s;
+}
+.stage:hover{transform:translateY(-6px);background:#fdf9ef;box-shadow:var(--shadow)}
+.stage-n{font-family:var(--round);font-size:27px;color:var(--cinnabar);line-height:1.2}
+.stage-l{font-family:var(--round);font-size:19px;margin:9px 0 5px}
+.stage-c{font-size:13px;color:var(--ink-faint)}
+.stage-bars{display:flex;gap:4px;justify-content:center;margin-top:16px}
+.stage-bars i{width:24px;height:5px;border-radius:3px;background:var(--paper-2)}
+.stage-bars i.f{background:var(--cinnabar)}
+.stage-go{
+  display:block;margin-top:14px;font-size:13px;color:var(--cinnabar);
+  min-height:18px;opacity:.55;transition:opacity .25s;
+}
+.stage:hover .stage-go{opacity:1}
+
+/* ── 家长区 ── */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.mini{
+  display:flex;gap:16px;padding:24px 24px;border-radius:15px;text-decoration:none;
+  background:rgba(255,253,247,.6);border:1px solid var(--line);color:inherit;
+  transition:transform .3s,box-shadow .3s,background .3s;
+}
+.mini:hover{transform:translateY(-5px);background:#fdf9ef;box-shadow:var(--shadow)}
+.mini-i{
+  width:46px;height:46px;flex:0 0 46px;border-radius:12px;display:grid;place-items:center;
+  font-family:var(--round);font-size:22px;color:#fdf8ee;
+}
+.mini h4{font-family:var(--round);font-size:18.5px;margin-bottom:5px}
+.mini p{font-size:13.6px;color:var(--ink-soft);line-height:1.7}
+.m-a{background:linear-gradient(150deg,#d4553c,var(--cinnabar-deep))}
+.m-b{background:linear-gradient(150deg,#4e7595,var(--indigo))}
+
+/* ── 许可 ── */
+.legal{
+  background:rgba(255,253,247,.55);border:1px solid var(--line);
+  border-radius:18px;padding:36px 34px;
+}
+.legal-t{font-family:var(--round);font-size:22px;margin-bottom:8px}
+.legal-lead{font-size:15px;color:var(--ink-soft);margin-bottom:24px;max-width:62ch}
+.legal-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lic{padding:19px 20px;border-radius:13px;background:rgba(244,237,224,.66);border:1px solid var(--line)}
+.lic h5{font-family:var(--round);font-size:16.5px;margin-bottom:7px;display:flex;align-items:center;gap:8px}
+.lic p{font-size:13.6px;color:var(--ink-soft);line-height:1.78}
+.lic .sw{width:11px;height:11px;border-radius:3px;flex:0 0 11px}
+.sw-pub{background:var(--celadon)}
+.sw-cc{background:var(--cinnabar)}
+.legal-foot{
+  margin-top:24px;padding-top:22px;border-top:1px dashed var(--line);
+  display:flex;flex-wrap:wrap;gap:12px 26px;font-size:13.4px;color:var(--ink-soft);
+}
+.legal-foot a{color:var(--cinnabar);text-decoration:none;border-bottom:1px solid rgba(200,68,46,.3)}
+.legal-foot a:hover{border-bottom-color:var(--cinnabar)}
+
+/* ── 页脚 ── */
+footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;background:rgba(234,224,205,.4)}
+.foot{display:flex;flex-wrap:wrap;gap:16px 30px;align-items:center;justify-content:space-between}
+.foot-l{font-size:13.4px;color:var(--ink-faint);line-height:1.9}
+.foot nav{display:flex;flex-wrap:wrap;gap:20px}
+.foot nav a{font-size:13.6px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+.foot nav a:hover{color:var(--cinnabar)}
+
+/* ── 进场动画 ── */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.3,1),transform .8s cubic-bezier(.2,.7,.3,1)}
+.rv.in{opacity:1;transform:none}
+
+@media(max-width:940px){
+  .hero{padding:60px 0 52px}
+  .hero-grid{grid-template-columns:1fr;gap:48px}
+  .hero-art{height:400px;max-width:400px;margin:0 auto;width:100%}
+  .cards,.duo,.legal-grid,.stages{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .nav-cta{margin-left:auto}
+  .hero-stats{gap:26px;flex-wrap:wrap}
+}
+@media(max-width:560px){
+  .wrap{padding:0 18px}
+  .card{width:246px;padding:20px}
+  .card-l{font-size:17.5px}
+  .card-1{left:-8px}.card-2{left:34px}.card-3{left:0}
+  .hero-stats{gap:22px}
+  .stat b{font-size:26px}
+  .legal{padding:26px 20px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .rv{opacity:1;transform:none}
+}
 </style>
-<script type="importmap">
-{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/jsm/" } }
-</script>
 </head>
 <body>
-<div id="app"></div>
-<div id="ui-root"></div>
-<div id="fade"></div>
-<div id="boot-error"></div>
+
+<nav>
+  <div class="wrap nav-in">
+    <a class="brand" href="/">
+      <span class="seal">字</span>
+      <span>
+        <span class="brand-t">丢字</span>
+        <span class="brand-s">DIUCI</span>
+      </span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#poems">四个乐园</a></li>
+      <li><a href="#stages">按课本</a></li>
+      <li><a href="#parents">家长</a></li>
+      <li><a href="#about">关于</a></li>
+    </ul>
+    <a class="nav-cta" href="https://k12.diuci.com/">开始学习</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span>课标 207 篇 + 教材拓展 46 篇 · 小学到高中</span>
+      <h1>学古诗<br>也<span class="accent">玩古诗</span></h1>
+      <p class="hero-sub">读一读，记一记，<b>再涂一涂</b>。</p>
+      <p class="hero-p">这里的每一篇都对着课本来的——原文、注释、译文、赏析齐全，背诵范围标得清清楚楚。读累了就去游戏里把字涂满一地。</p>
+      <div class="hero-btns">
+        <a class="btn btn-p" href="https://k12.diuci.com/">去读古诗 <span>→</span></a>
+        <a class="btn btn-s" href="https://ink.diuci.com/">玩丢词大作战</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>253</b><span>课文篇目</span></div>
+        <div class="stat"><b>110</b><span>小学</span></div>
+        <div class="stat"><b>71</b><span>初中</span></div>
+        <div class="stat"><b>72</b><span>高中</span></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <span class="ink-splat sp-1"></span>
+      <span class="ink-splat sp-2"></span>
+      <article class="card card-1">
+        <div class="card-t">静夜思</div>
+        <div class="card-a">唐 · 李白</div>
+        <div class="card-l">床前明月光<br>疑是地上霜</div>
+        <div class="card-g">小学 一年级下册</div>
+      </article>
+      <article class="card card-2">
+        <div class="card-t">登鹳雀楼</div>
+        <div class="card-a">唐 · 王之涣</div>
+        <div class="card-l">白日依山尽<br>黄河入海流</div>
+        <div class="card-g">小学 二年级上册</div>
+      </article>
+      <article class="card card-3">
+        <div class="card-t">江雪</div>
+        <div class="card-a">唐 · 柳宗元</div>
+        <div class="card-l">千山鸟飞绝<br>万径人踪灭</div>
+        <div class="card-g">小学 二年级上册</div>
+      </article>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="sec" id="poems">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="sec-k">四 个 乐 园</span>
+        <h2>想玩哪个，就点哪个</h2>
+        <p class="sec-p">四条路都通向我们做的同一批内容：253 篇古诗文，其中 207 篇对上课标要求。</p>
+      </div>
+      <div class="cards">
+        <a class="entry e-a rv" href="https://k12.diuci.com/">
+          <div class="entry-ico i-a">诗</div>
+          <h3>古诗文库</h3>
+          <p>原文、注释、译文、赏析、考点，背诵范围按学段册次分好，翻起来就知道学到哪。</p>
+          <div><span class="tag">253 篇</span><span class="tag">按册次</span><span class="tag">含译文</span></div>
+          <span class="entry-go">开始阅读 →</span>
+        </a>
+        <a class="entry e-b rv" href="https://ink.diuci.com/">
+          <div class="entry-ico i-b">涂</div>
+          <h3>丢词大作战</h3>
+          <p>4v4 汉字涂地射击。用古诗词占点，把好词好句铺满全场，涂得多的那队赢。</p>
+          <div><span class="tag">3D 对战</span><span class="tag">联句题</span><span class="tag">四人联机</span></div>
+          <span class="entry-go">进入游戏 →</span>
+        </a>
+        <a class="entry e-c rv" href="https://moon.diuci.com/" style="transition-delay:.08s">
+          <div class="entry-ico i-c">月</div>
+          <h3>遗失月冕</h3>
+          <p>月亮丢了一枚冕。顺着光影走，把碎片一段段捡回来，边走边读里面的句子。</p>
+          <div><span class="tag">探索</span><span class="tag">叙事</span></div>
+          <span class="entry-go">走进月光 →</span>
+        </a>
+        <a class="entry e-d rv" href="https://github.com/diuci/k12-chinese-poetry" style="transition-delay:.16s">
+          <div class="entry-ico i-d">源</div>
+          <h3>内容开源</h3>
+          <p>253 篇 Markdown 全部公开在 GitHub。每篇都标了课标或教材拓展、年级册次、出处，觉得哪里有错，欢迎提 issue 或直接改。</p>
+          <div><span class="tag">CC BY 4.0</span><span class="tag">逐篇标注</span><span class="tag">欢迎贡献</span></div>
+          <span class="entry-go">去 GitHub →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="stages" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="sec-k">按 课 本 排</span>
+        <h2>三个学段，都对得上</h2>
+        <p class="sec-p">不是随便凑的篇目。253 篇里，小学 110、初中 71、高中 72，每一篇都标了年级和册次。</p>
+      </div>
+      <div class="stages">
+        <a class="stage rv" href="https://k12.diuci.com/poems/小学/一年级上册/咏鹅.html">
+          <div class="stage-n">110</div>
+          <div class="stage-l">小学</div>
+          <div class="stage-c">一年级到六年级</div>
+          <div class="stage-bars"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></div>
+          <span class="stage-go">去看小学篇目 →</span>
+        </a>
+        <a class="stage rv" href="https://k12.diuci.com/poems/初中/七年级上册/观沧海.html" style="transition-delay:.09s">
+          <div class="stage-n">71</div>
+          <div class="stage-l">初中</div>
+          <div class="stage-c">七年级到九年级</div>
+          <div class="stage-bars"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></div>
+          <span class="stage-go">去看初中篇目 →</span>
+        </a>
+        <a class="stage rv" href="https://k12.diuci.com/poems/高中/必修上册/劝学.html" style="transition-delay:.18s">
+          <div class="stage-n">72</div>
+          <div class="stage-l">高中</div>
+          <div class="stage-c">必修到选择性必修</div>
+          <div class="stage-bars"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></div>
+          <span class="stage-go">去看高中篇目 →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="parents" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="sec-k">给 大 人</span>
+        <h2>家长和老师</h2>
+      </div>
+      <div class="duo">
+        <a class="mini rv" href="https://k12.diuci.com/guide.html">
+          <div class="mini-i m-a">家</div>
+          <div>
+            <h4>家长指南</h4>
+            <p>怎么用这些内容陪孩子读、怎么判断背诵范围、常见误区。</p>
+          </div>
+        </a>
+        <a class="mini rv" href="https://k12.diuci.com/print.html" style="transition-delay:.09s">
+          <div class="mini-i m-b">印</div>
+          <div>
+            <h4>打印版全部篇目</h4>
+            <p>253 篇排成一张目录，按学段册次顺序，打印出来就能用。</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="about" style="padding-top:0">
+    <div class="wrap">
+      <div class="legal rv">
+        <div class="legal-t">关于内容和版权</div>
+        <p class="legal-lead">我们把来源和授权边界写清楚了。诗文原文是公有领域，注释、译文、赏析和编排是我们自己的创作。</p>
+        <div class="legal-grid">
+          <div class="lic">
+            <h5><span class="sw sw-pub"></span>诗文原文 · 公有领域</h5>
+            <p>253 篇原文均来自公有领域，不受版权保护。原始出处逐篇记录在来源台账中。</p>
+          </div>
+          <div class="lic">
+            <h5><span class="sw sw-cc"></span>注释译文赏析 · CC BY 4.0</h5>
+            <p>注释、译文、赏析、篇目编排与全部代码采用 CC BY 4.0，署名即可自由使用。</p>
+          </div>
+        </div>
+        <div class="legal-foot">
+          <a href="https://github.com/diuci/k12-chinese-poetry/blob/main/PROVENANCE.md">来源台账</a>
+          <a href="https://github.com/diuci/k12-chinese-poetry/blob/main/LICENSE">许可全文</a>
+          <a href="https://k12.diuci.com/sources.html">站点来源页</a>
+          <a href="https://github.com/diuci/k12-chinese-poetry/blob/main/docs/contributing.md">贡献与纠错</a>
+          <a href="https://github.com/diuci/k12-chinese-poetry/issues">提 issue</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="foot-l">
+      丢字 diuci.com · 给孩子的古诗文<br>
+      课标 207 篇 + 教材拓展 46 篇 = 253 篇
+    </div>
+    <nav>
+      <a href="https://k12.diuci.com/">古诗文</a>
+      <a href="https://ink.diuci.com/">丢词大作战</a>
+      <a href="https://moon.diuci.com/">遗失月冕</a>
+      <a href="https://github.com/diuci/k12-chinese-poetry">内容仓库</a>
+    </nav>
+  </div>
+</footer>
+
 <script>
-  // fade in once the loading screen is mounted
-  window.addEventListener('DOMContentLoaded', () => setTimeout(() => { const f = document.getElementById('fade'); if (f) { f.style.opacity = '0'; f.style.pointerEvents = 'none'; } }, 60));
+(function(){
+  // 进场动画
+  var els=document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
+      });
+    },{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+    els.forEach(function(el){io.observe(el);});
+  }else{
+    els.forEach(function(el){el.classList.add('in');});
+  }
+
+  // 诗词卡缓慢漂浮
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    document.querySelectorAll('.card').forEach(function(c,i){
+      var base=c.style.transform;
+      c.animate(
+        [{transform:base+' translateY(0)'},{transform:base+' translateY(-11px)'},{transform:base+' translateY(0)'}],
+        {duration:5200+i*900,iterations:Infinity,easing:'ease-in-out'}
+      );
+    });
+  }
+})();
 </script>
-<script type="module" src="./src/main.js"></script>
 </body>
 </html>
