@@ -432,10 +432,109 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
   .stat b{font-size:26px}
   .legal{padding:26px 20px}
 }
+
+/* ==================================================================
+   移动端 App 风格
+   ------------------------------------------------------------------
+   与 k12.diuci.com 的底部标签栏同一套视觉语言：同样的高度、
+   同样的毛玻璃、同样的圆体字号、同样的朱砂高亮。
+   两站的区别只在菜单项——主站是四个乐园入口，
+   K12 是总览/小学/初中/高中，两边都留「回首页」互跳。
+
+   为什么必须做：940px 断点下 .nav-links 被隐藏，
+   移动端顶部只剩品牌和主题按钮，四个乐园完全没了入口。
+   底部标签栏把它们补回来，且是拇指可达的位置。
+   ================================================================== */
+
+/* 底部标签栏：桌面隐藏 */
+.dc-tabbar{display:none}
+
+@media(max-width:768px){
+  /* 顶栏：与 K12 一致的标题栏化处理 */
+  .nav-in{height:56px;gap:10px}
+  .brand-t{font-size:18px}
+  .brand-s{font-size:9px;letter-spacing:.2em}
+  .seal{width:34px;height:34px;flex:0 0 34px;font-size:20px;border-radius:8px}
+  .theme-btn{width:34px;height:34px;flex:0 0 34px}
+  .theme-btn svg{width:17px;height:17px}
+  .nav-cta{font-size:13.5px;padding:8px 15px}
+  .wrap{padding:0 16px}
+
+  /* 底部标签栏
+     注意 top:auto —— 全局 nav{position:sticky;top:0} 会把 top 继承下来，
+     fixed 元素同时带 top:0 和 bottom:0 会被拉到页面顶部，必须显式清掉。 */
+  .dc-tabbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:70;
+    height:calc(58px + env(safe-area-inset-bottom,0px));
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    background:var(--nav-bg);
+    backdrop-filter:blur(18px) saturate(1.4);
+    -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border-top:1px solid var(--line);
+    box-shadow:0 -2px 18px -8px rgba(36,31,26,.28);
+  }
+  .dc-tab{
+    flex:1 1 0;min-width:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    text-decoration:none;color:var(--ink-faint);
+    transition:color .2s,transform .12s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .dc-tab:active{transform:scale(.9)}
+  .dc-tab .ic{
+    width:22px;height:22px;fill:none;stroke:currentColor;
+    stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+  }
+  .dc-tab .tx{
+    font-family:var(--round);font-size:10.5px;letter-spacing:.06em;line-height:1;
+  }
+  .dc-tab.on{color:var(--cinnabar)}
+  .dc-tab.on .ic{stroke-width:2}
+
+  /* 底部栏会盖住内容，尾部留出等高空白 */
+  body{padding-bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+
+  /* 首屏收紧，留白贴近原生 App */
+  .hero{padding:34px 0 30px}
+  .hero-p{font-size:15px;line-height:1.85}
+  .hero-btns .btn{width:100%;justify-content:center}
+  .hero-btns{flex-direction:column;gap:10px}
+
+  /* 四个乐园入口：桌面是双列大卡，手机上改单列列表，
+     左侧一道朱砂竖线，接近原生 App 的条目观感 */
+  .cards{grid-template-columns:1fr;gap:12px}
+  .entry{
+    padding:18px 18px 16px 20px;
+    border-radius:14px;
+    border-left:3px solid var(--cinnabar);
+    transition:transform .12s,box-shadow .3s,border-color .3s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .entry:active{transform:scale(.985)}
+  .entry-ico{
+    width:44px;height:44px;font-size:23px;border-radius:11px;
+    margin-bottom:12px;float:left;margin-right:14px;
+  }
+  .entry h3{font-size:18px;margin:0 0 6px;line-height:1.3}
+  .entry p{font-size:13.5px;line-height:1.7;margin:0 0 10px}
+  .entry .tag{font-size:11px;padding:2px 8px}
+  .entry-go{font-size:13.5px;margin-top:2px}
+
+  /* 段落留白放松一点，像 App 的分组列表 */
+  .sec{padding:44px 0;scroll-margin-top:56px}
+  .sec-head{margin-bottom:28px}
+  .sec-head h2{font-size:clamp(24px,7vw,32px)}
+  .sec-p{font-size:14.5px}
+
+  .duo,.legal-grid,.stages{grid-template-columns:1fr;gap:12px}
+  .mini{padding:18px 16px;border-radius:14px}
+}
+
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   .rv{opacity:1;transform:none}
   .card{animation:none}
+  .dc-tab:active,.entry:active{transform:none}
 }
 </style>
 </head>
@@ -652,6 +751,49 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
     </nav>
   </div>
 </footer>
+
+<!-- 移动端底部标签栏：与 k12.diuci.com 同一套视觉语言。
+     940px 以下顶栏的 .nav-links 被隐藏，四个乐园在手机上没了入口，
+     这里用底部标签栏补回来，拇指可达。桌面端由 CSS 隐藏。
+     「首页」项同时作为返回 K12 的跳板，见 K12 的同名标签。 -->
+<nav class="dc-tabbar" aria-label="快捷导航">
+  <a class="dc-tab on" href="/" aria-current="page">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3.6 10.4 12 3.8l8.4 6.6"/>
+      <path d="M5.8 9.2V19a1.4 1.4 0 0 0 1.4 1.4h9.6a1.4 1.4 0 0 0 1.4-1.4V9.2"/>
+      <path d="M10 20.4v-5.2h4v5.2"/>
+    </svg>
+    <span class="tx">首页</span>
+  </a>
+  <a class="dc-tab" href="https://k12.diuci.com/">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 5.2A1.4 1.4 0 0 1 5.4 3.8H11a2 2 0 0 1 2 2v13a1.6 1.6 0 0 0-1.6-1.4H4z"/>
+      <path d="M20 5.2a1.4 1.4 0 0 0-1.4-1.4H15a2 2 0 0 0-2 2v13a1.6 1.6 0 0 1 1.6-1.4H20z"/>
+    </svg>
+    <span class="tx">古诗文</span>
+  </a>
+  <a class="dc-tab" href="https://ink.diuci.com/">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14.2 3.6H20a.4.4 0 0 1 .4.4v5.8"/>
+      <path d="M20.4 3.6 11.2 12.8a2 2 0 0 0-.5 1l-.8 3.4a.5.5 0 0 0 .6.6l3.4-.8a2 2 0 0 0 1-.5l9.2-9.2"/>
+      <path d="M15.6 8.4 5.2 18.8a2 2 0 0 1-1 .5l-2 .6a.5.5 0 0 1-.6-.6l.6-2a2 2 0 0 1 .5-1L13 5.6"/>
+    </svg>
+    <span class="tx">对战</span>
+  </a>
+  <a class="dc-tab" href="https://moon.diuci.com/">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z"/>
+      <path d="M17.6 3.2 16.8 5M20.8 6.4 18.6 6.9M14.6 2.4l.5 1.8"/>
+    </svg>
+    <span class="tx">月光</span>
+  </a>
+  <a class="dc-tab" href="https://github.com/diuci/k12-chinese-poetry">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 19.4c-4.3 1.3-4.3-2.2-6-2.6m12 5.2v-3.4c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6.1a4.8 4.8 0 0 0-1.3-3.3 4.4 4.4 0 0 0-.1-3.3s-1.1-.3-3.5 1.3a11.9 11.9 0 0 0-6.2 0C6.5 3.6 5.4 3.9 5.4 3.9a4.4 4.4 0 0 0-.1 3.3A4.8 4.8 0 0 0 4 10.5c0 4.7 2.7 5.8 5.5 6.1-.6.6-.6 1.2-.5 2v3.4"/>
+    </svg>
+    <span class="tx">开源</span>
+  </a>
+</nav>
 
 <script>
 (function(){
