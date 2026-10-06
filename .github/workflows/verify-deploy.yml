@@ -98,8 +98,13 @@ jobs:
           # 用浏览器 UA：Cloudflare 会对 curl 默认 UA 做拦截，
           # 返回人机校验页而不是真实内容。
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+          # branch 模式下「推送即上线」，但 Pages 的构建与分发是异步的：
+          # 校验跑在部署之前，就会拿旧页面核对新锚点而失败。
+          # 2026-10-06 加汉兜入口那次就是这么红的：仓库对、线上也对，只是校验抢跑了。
+          # 所以先等 45 秒，再把重试从 8×20s 放宽到 16×30s（最长约 8 分钟）。
+          sleep 45
           code=000
-          for attempt in $(seq 1 8); do
+          for attempt in $(seq 1 16); do
             code="$(curl -sSL -A "${UA}" \
               -H 'Accept: text/html,application/xhtml+xml' \
               -H 'Accept-Language: zh-CN,zh;q=0.9' \
@@ -110,7 +115,7 @@ jobs:
             if [ "${code}" = "200" ] && [ "${size}" -gt 0 ]; then
               break
             fi
-            sleep 20
+            sleep 30
           done
           if [ "${code}" != "200" ] || [ ! -s live.html ]; then
             echo "::error::无法从 CI 抓取 ${SITE_URL}（最后一次 HTTP ${code}），请确认 Pages 与 Cloudflare 状态"
