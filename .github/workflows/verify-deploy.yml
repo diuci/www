@@ -67,9 +67,11 @@ jobs:
             'https://k12.diuci.com/'
             'https://ink.diuci.com/'
             'https://moon.diuci.com/'
+            'https://handle.diuci.com/'
             'https://github.com/diuci/k12-chinese-poetry'
             ':root[data-theme="dark"]'
             '内容仓库'
+            '五 个 乐 园'
           )
           missing=0
           for a in "${anchors[@]}"; do
@@ -129,9 +131,11 @@ jobs:
             'https://k12.diuci.com/'
             'https://ink.diuci.com/'
             'https://moon.diuci.com/'
+            'https://handle.diuci.com/'
             'https://github.com/diuci/k12-chinese-poetry'
             ':root[data-theme="dark"]'
             '内容仓库'
+            '五 个 乐 园'
           )
           missing=0
           for a in "${anchors[@]}"; do
