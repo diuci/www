@@ -318,8 +318,10 @@ h2{font-family:var(--round);font-size:clamp(29px,3.7vw,43px);line-height:1.28;ma
 .i-d{background:linear-gradient(150deg,#77a494,var(--celadon))}
 /* 汉兜的印章就是朱砂，与顶栏 .seal 同一支渐变；不另发明一个新色 */
 .i-e{background:linear-gradient(155deg,var(--cinnabar),var(--cinnabar-deep))}
-/* 五张卡排双列会剩一个空格：最后一张通栏 */
-.cards>.entry:last-child{grid-column:1/-1}
+/* 连句：青瓷往深一档走，和「内容开源」那格浅青瓷拉开，不另发明一个新色 */
+.e-f::after{background:radial-gradient(circle,rgba(95,141,125,.18),transparent 70%)}
+.i-f{background:linear-gradient(155deg,#4f7a68,var(--celadon))}
+/* 六张卡正好排满三行双列，不再需要「最后一张通栏」那条补丁 */
 
 /* ── 学段 ── */
 .stages{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
@@ -443,11 +445,11 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
    ------------------------------------------------------------------
    与 k12.diuci.com 的底部标签栏同一套视觉语言：同样的高度、
    同样的毛玻璃、同样的圆体字号、同样的朱砂高亮。
-   两站的区别只在菜单项——主站是五个乐园入口，
+   两站的区别只在菜单项——主站是六个乐园入口，
    K12 是总览/小学/初中/高中，两边都留「回首页」互跳。
 
    为什么必须做：940px 断点下 .nav-links 被隐藏，
-   移动端顶部只剩品牌和主题按钮，五个乐园完全没了入口。
+   移动端顶部只剩品牌和主题按钮，六个乐园完全没了入口。
    底部标签栏把它们补回来，且是拇指可达的位置。
    ================================================================== */
 
@@ -505,7 +507,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
   .hero-btns .btn{width:100%;justify-content:center}
   .hero-btns{flex-direction:column;gap:10px}
 
-  /* 五个乐园入口：桌面是双列大卡，手机上改单列列表，
+  /* 六个乐园入口：桌面是双列大卡，手机上改单列列表，
      左侧一道朱砂竖线，接近原生 App 的条目观感 */
   .cards{grid-template-columns:1fr;gap:12px}
   .entry{
@@ -556,6 +558,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
     </a>
     <ul class="nav-links">
       <li><a href="https://k12.diuci.com/">古诗文</a></li>
+      <li><a href="https://lian.diuci.com/">连词成句</a></li>
       <li><a href="https://ink.diuci.com/">丢词大作战</a></li>
       <li><a href="https://moon.diuci.com/">遗失月冕</a></li>
       <li><a href="https://handle.diuci.com/">汉兜</a></li>
@@ -621,9 +624,9 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
   <section class="sec" id="poems">
     <div class="wrap">
       <div class="sec-head rv">
-        <span class="sec-k">五 个 乐 园</span>
+        <span class="sec-k">六 个 乐 园</span>
         <h2>想玩哪个，就点哪个</h2>
-        <p class="sec-p">前四个乐园都通向我们做的同一批内容：253 篇古诗文，其中 207 篇对上课标要求。汉兜玩的是成语，另有一套词库。</p>
+        <p class="sec-p">前五个乐园都通向我们做的同一批内容：253 篇古诗文，其中 207 篇对上课标要求。连词成句玩的是必背课文的原文，汉兜玩的是成语，另有一套词库。</p>
       </div>
       <div class="cards">
         <a class="entry e-a rv" href="https://k12.diuci.com/">
@@ -647,14 +650,21 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
           <div><span class="tag">每日成语</span><span class="tag">拼音 / 注音 / 双拼</span><span class="tag">复刻自开源汉兜</span></div>
           <span class="entry-go">开始猜字 →</span>
         </a>
-        <a class="entry e-c rv" href="https://moon.diuci.com/" style="transition-delay:.16s">
+        <a class="entry e-f rv" href="https://lian.diuci.com/" style="transition-delay:.16s">
+          <div class="entry-ico i-f">连</div>
+          <h3>连词成句</h3>
+          <p>每天一段必背课文。在字块里连出相邻的字找回每一句，再把找齐的句子排回原文顺序——最后那一步靠的是记不记得课文。</p>
+          <div><span class="tag">每日课文</span><span class="tag">245 篇</span><span class="tag">连字 + 排序</span></div>
+          <span class="entry-go">开始连句 →</span>
+        </a>
+        <a class="entry e-c rv" href="https://moon.diuci.com/" style="transition-delay:.24s">
           <div class="entry-ico i-c">月</div>
           <h3>遗失月冕</h3>
           <p>月亮丢了一枚冕。顺着光影走，把碎片一段段捡回来，边走边读里面的句子。</p>
           <div><span class="tag">探索</span><span class="tag">叙事</span></div>
           <span class="entry-go">走进月光 →</span>
         </a>
-        <a class="entry e-d rv" href="https://github.com/diuci/k12-chinese-poetry" style="transition-delay:.24s">
+        <a class="entry e-d rv" href="https://github.com/diuci/k12-chinese-poetry" style="transition-delay:.32s">
           <div class="entry-ico i-d">源</div>
           <h3>内容开源</h3>
           <p>253 篇 Markdown 全部公开在 GitHub。每篇都标了课标或教材拓展、年级册次、出处，觉得哪里有错，欢迎提 issue 或直接改。</p>
@@ -759,6 +769,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
     </div>
     <nav>
       <a href="https://k12.diuci.com/">古诗文</a>
+      <a href="https://lian.diuci.com/">连词成句</a>
       <a href="https://ink.diuci.com/">丢词大作战</a>
       <a href="https://moon.diuci.com/">遗失月冕</a>
       <a href="https://handle.diuci.com/">汉兜</a>
@@ -768,7 +779,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
 </footer>
 
 <!-- 移动端底部标签栏：与 k12.diuci.com 同一套视觉语言。
-     940px 以下顶栏的 .nav-links 被隐藏，五个乐园在手机上没了入口，
+     940px 以下顶栏的 .nav-links 被隐藏，六个乐园在手机上没了入口，
      这里用底部标签栏补回来，拇指可达。桌面端由 CSS 隐藏。
      「首页」项同时作为返回 K12 的跳板，见 K12 的同名标签。 -->
 <nav class="dc-tabbar" aria-label="快捷导航">
@@ -786,6 +797,15 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       <path d="M20 5.2a1.4 1.4 0 0 0-1.4-1.4H15a2 2 0 0 0-2 2v13a1.6 1.6 0 0 1 1.6-1.4H20z"/>
     </svg>
     <span class="tx">古诗文</span>
+  </a>
+  <a class="dc-tab" href="https://lian.diuci.com/">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="5.4" cy="6.6" r="2.3"/>
+      <circle cx="12" cy="12" r="2.3"/>
+      <circle cx="18.6" cy="17.4" r="2.3"/>
+      <path d="M7.1 8.3l3.5 2.4M13.4 13.3l3.5 2.4"/>
+    </svg>
+    <span class="tx">连句</span>
   </a>
   <a class="dc-tab" href="https://ink.diuci.com/">
     <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">

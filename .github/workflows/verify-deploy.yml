@@ -75,11 +75,12 @@ jobs:
             'https://ink.diuci.com/'
             'https://moon.diuci.com/'
             'https://handle.diuci.com/'
+            'https://lian.diuci.com/'
             'https://github.com/diuci/k12-chinese-poetry'
             ':root[data-theme="dark"]'
             '内容仓库'
             'https://k12.diuci.com/legal'
-            '五 个 乐 园'
+            '六 个 乐 园'
           )
           missing=0
           for a in "${anchors[@]}"; do
@@ -145,11 +146,12 @@ jobs:
             'https://ink.diuci.com/'
             'https://moon.diuci.com/'
             'https://handle.diuci.com/'
+            'https://lian.diuci.com/'
             'https://github.com/diuci/k12-chinese-poetry'
             ':root[data-theme="dark"]'
             '内容仓库'
             'https://k12.diuci.com/legal'
-            '五 个 乐 园'
+            '六 个 乐 园'
           )
           missing=0
           for a in "${anchors[@]}"; do
