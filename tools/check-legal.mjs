@@ -122,7 +122,11 @@ export function checkContact(texts, cfg) {
 const SKIP_DIRS = new Set(['.git', 'node_modules', 'dist', '.vitepress', '.baseline-handle', '__pycache__'])
 const TEXT_EXT = new Set(['.md', '.txt', '.mjs', '.js', '.cjs', '.ts', '.vue', '.html', '.yml', '.yaml', '.json', '.css'])
 // 检查器自己必然写着那些被禁的词——那是词表本身，不是文案。
+// 不止本站那一份：k12-site 的 CI 会把内容仓检出到 content/，
+// 于是 content/tools/check-legal.mjs 也被扫到，护栏因为「词表里写着那些词」而红。
+// 凡是路径以 tools/check-legal.mjs 结尾的都跳过——文案照抓。
 const SELF = 'tools/check-legal.mjs'
+export const isChecker = rel => rel === SELF || rel.endsWith('/' + SELF)
 const SKIP_FILES = new Set(['package-lock.json'])
 /** 第三方原始数据不扫：那是 Unicode 的原文，改不了也不该改。 */
 const SKIP_PATH_HINTS = ['data/unihan', 'vendor/']
@@ -154,7 +158,7 @@ function readText(rel) {
 }
 
 export function collect(cfg) {
-  const files = walk(ROOT).filter(rel => rel !== SELF).map(rel => [rel, readText(rel)]).filter(([, t]) => t !== null)
+  const files = walk(ROOT).filter(rel => !isChecker(rel)).map(rel => [rel, readText(rel)]).filter(([, t]) => t !== null)
   const licenseText = fs.existsSync(path.join(ROOT, 'LICENSE')) ? readText('LICENSE') : null
   const vendorDirs = []
   for (const dir of (cfg.vendorDirs || [])) {
@@ -230,7 +234,14 @@ function selftest() {
   // 8) 侵权联系入口缺失必须被抓到
   if (checkContact([['a.md', '没有邮箱']], { contactEmail: 'hi@diuci.com', legalLink: null }).length === 0)
     problems.push('缺侵权联系入口应当报错，却放行了')
-  // 9) 全好的样本必须零问题——否则这条检查就是摆设
+  // 9) 检查器自身（包括内容仓那一份）不该被自己的词表绊倒；普通文案要照抓
+  if (!isChecker('tools/check-legal.mjs') || !isChecker('content/tools/check-legal.mjs'))
+    problems.push('检查器自身（含内容仓那一份）应当跳过，却没跳过')
+  if (isChecker('site/legal.md'))
+    problems.push('普通文案不该被跳过，却被跳过了')
+  if (checkPhrasing([['content/site/x.md', '玩法参考自 古诗连词。']]).length === 0)
+    problems.push('内容仓的文案提到禁词应当报错，却放行了')
+  // 10) 全好的样本必须零问题——否则这条检查就是摆设
   if (checkLicense(goodLicense, { upstreamCopyrights: [] }).length !== 0)
     problems.push('正常 LICENSE 不该报错，却误报')
 
@@ -240,7 +251,7 @@ function selftest() {
     process.exit(1)
   }
   console.log('[ok] check-legal --selftest 通过（缺 LICENSE、缺本站版权行、丢上游版权行、'
-    + 'vendor 缺 LICENSE、卒年越界、缺卒年证据、绝对化表述、第三方站名、缺联系入口都试到了）')
+    + 'vendor 缺 LICENSE、卒年越界、缺卒年证据、绝对化表述、第三方站名、缺联系入口、检查器自身不误伤都试到了）')
   process.exit(0)
 }
 
