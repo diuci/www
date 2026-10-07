@@ -1,0 +1,13 @@
+{
+  "name": "_deploy",
+  "upstreamCopyrights": [],
+  "vendorDirs": [],
+  "corpusFiles": [],
+  "contactEmail": "hi@diuci.com",
+  "legalLink": "k12.diuci.com/legal",
+  "phraseScan": [
+    "LICENSE",
+    "README.md",
+    "index.html"
+  ]
+}

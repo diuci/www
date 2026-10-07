@@ -55,6 +55,13 @@ jobs:
           fi
           echo ".nojekyll 存在"
 
+      - name: 法律护栏
+        # 先证明检查器抓得住坏样本，再看它说「通过」值不值得信。
+        run: |
+          set -euo pipefail
+          node tools/check-legal.mjs --selftest
+          node tools/check-legal.mjs
+
       - name: 校验仓库首页内容完整
         # 这一步只读仓库里的 index.html，不依赖网络，因此永远可靠。
         # 它能拦住「覆盖文件时内容被截断/清空」这类最危险的误操作。
@@ -71,6 +78,7 @@ jobs:
             'https://github.com/diuci/k12-chinese-poetry'
             ':root[data-theme="dark"]'
             '内容仓库'
+            'https://k12.diuci.com/legal'
             '五 个 乐 园'
           )
           missing=0
@@ -140,6 +148,7 @@ jobs:
             'https://github.com/diuci/k12-chinese-poetry'
             ':root[data-theme="dark"]'
             '内容仓库'
+            'https://k12.diuci.com/legal'
             '五 个 乐 园'
           )
           missing=0
