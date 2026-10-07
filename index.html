@@ -159,6 +159,9 @@ nav{
 }
 .nav-links a:hover{color:var(--cinnabar)}
 .nav-links a:hover::after{width:100%}
+/* 当前所在的那一站：朱砂色 + 常驻下划线。分站顶栏同一套标记方式。 */
+.nav-links a.on{color:var(--cinnabar)}
+.nav-links a.on::after{width:100%}
 .nav-cta{
   font-family:var(--round);font-size:15px;color:var(--on-accent);background:var(--ink);
   padding:9px 20px;border-radius:999px;text-decoration:none;
@@ -557,7 +560,8 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       </span>
     </a>
     <ul class="nav-links">
-      <li><a href="https://k12.diuci.com/">古诗文</a></li>
+      <li><a href="/" class="on" aria-current="page">首页</a></li>
+      <li><a href="https://k12.diuci.com/">学古诗</a></li>
       <li><a href="https://lian.diuci.com/">连词成句</a></li>
       <li><a href="https://ink.diuci.com/">丢词大作战</a></li>
       <li><a href="https://moon.diuci.com/">遗失月冕</a></li>
@@ -573,7 +577,6 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
         <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z"/>
       </svg>
     </button>
-    <a class="nav-cta" href="https://k12.diuci.com/">开始学习</a>
   </div>
 </nav>
 
@@ -631,7 +634,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       <div class="cards">
         <a class="entry e-a rv" href="https://k12.diuci.com/">
           <div class="entry-ico i-a">诗</div>
-          <h3>古诗文库</h3>
+          <h3>学古诗</h3>
           <p>原文、注释、译文、赏析、考点，背诵范围按学段册次分好，翻起来就知道学到哪。</p>
           <div><span class="tag">253 篇</span><span class="tag">按册次</span><span class="tag">含译文</span></div>
           <span class="entry-go">开始阅读 →</span>
@@ -768,7 +771,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       <a href="https://k12.diuci.com/legal">原文公有领域 · 注释 CC BY 4.0 · 代码 MIT · 版权与免责</a>
     </div>
     <nav>
-      <a href="https://k12.diuci.com/">古诗文</a>
+      <a href="https://k12.diuci.com/">学古诗</a>
       <a href="https://lian.diuci.com/">连词成句</a>
       <a href="https://ink.diuci.com/">丢词大作战</a>
       <a href="https://moon.diuci.com/">遗失月冕</a>
@@ -796,7 +799,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       <path d="M4 5.2A1.4 1.4 0 0 1 5.4 3.8H11a2 2 0 0 1 2 2v13a1.6 1.6 0 0 0-1.6-1.4H4z"/>
       <path d="M20 5.2a1.4 1.4 0 0 0-1.4-1.4H15a2 2 0 0 0-2 2v13a1.6 1.6 0 0 1 1.6-1.4H20z"/>
     </svg>
-    <span class="tx">古诗文</span>
+    <span class="tx">学古诗</span>
   </a>
   <a class="dc-tab" href="https://lian.diuci.com/">
     <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
