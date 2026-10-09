@@ -48,7 +48,46 @@ export function buttonProblems(geo, want) {
   return problems
 }
 
+/*
+  钮上写的是「切过去那一档」的名字，用那一档自己的字形：
+  简体侧写「繁」，繁体侧写「简」。点一次之后文案必须换成另一枚。
+  连句曾经把繁体侧写成「簡」——整份界面词跟着繁体走，钮上的字也一起换了，
+  于是繁体侧找不到「简」这一枚。这一条就是盯这个。
+*/
+export function labelPairProblems(before, after) {
+  const problems = []
+  const want = ['繁', '简']
+  for (const [where, label] of [['点之前', before], ['点之后', after]]) {
+    if (!want.includes(label))
+      problems.push(where + '的文案必须是单字「繁」或「简」，现在是「' + label + '」')
+  }
+  if (want.includes(before) && before === after)
+    problems.push('点繁简钮前后文案没换（两边都是「' + before + '」），这一钮等于没接上')
+  return problems
+}
+
 function selftest() {
+  // 文案成对的坏例子：繁体侧写成繁体字形、点完不换字、文案是两个字
+  const pairCases = [
+    ['繁体侧把「简」写成了「簡」', '繁', '簡'],
+    ['点完文案没换，两边都是「繁」', '繁', '繁'],
+    ['文案写成「繁简」两个字', '繁简', '简'],
+    ['简体侧写成了「简」（方向反了也照样是单字，但两枚必须成对）', '简', '简'],
+  ]
+  let pairTried = 0, pairCaught = 0
+  for (const [why, a, b] of pairCases) {
+    pairTried++
+    if (labelPairProblems(a, b).length) pairCaught++
+    else console.error('  坏例子没抓住：' + why)
+  }
+  for (const [a, b] of [['繁', '简'], ['简', '繁']]) {
+    pairTried++
+    const probs = labelPairProblems(a, b)
+    if (probs.length) console.error('  好例子被误报：' + a + '→' + b + ' → ' + probs[0])
+  }
+  if (pairCaught !== pairTried - 2) { console.error('[check-buttons] --selftest 失败：文案成对试了 ' + (pairTried - 2) + ' 例，抓住 ' + pairCaught + ' 例'); process.exit(1) }
+  console.log('[ok] 文案成对：当场数到 ' + (pairTried - 2) + ' 个坏例子，全部试到；两枚好例子不误伤')
+
   const good = { lang: { x: 900, w: 38, h: 38, radius: '50%', text: '繁' }, theme: { x: 940, w: 38, h: 38, radius: '50%', text: '' } }
   // 每一例自己说清「这一例该按哪一档尺寸要求」：窄屏那一例的期望是 34px
   const cases = [
@@ -125,6 +164,16 @@ for (const [name, dir, port] of SITES) {
     }
     measured++
     for (const p of buttonProblems(geo, vp.want)) problems.push(name + '（' + vp.width + 'px）：' + p)
+    // 点一次，再量文案：两档必须正好是「繁」与「简」这一对
+    if (geo.lang) {
+      const before = geo.lang.text.trim()
+      await page.click('.dc-lang-btn')
+      await new Promise(r => setTimeout(r, 1200))
+      const el2 = await page.$('.dc-lang-btn')
+      const after = el2 ? ((await el2.evaluate(n => n.textContent)) || '').trim() : '(钮不见了)'
+      for (const p of labelPairProblems(before, after)) problems.push(name + '（' + vp.width + 'px）：' + p)
+      console.log('  ' + name + '（' + vp.width + 'px）文案 ' + before + ' → ' + after)
+    }
     await page.close()
   }
   server.close()
