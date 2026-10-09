@@ -1,0 +1,130 @@
+/* ---------------------------------------------------------------------------
+   丢词夺理四站共用的设计令牌（唯一事实源）
+   主站 diuci.com · 学古诗 k12.diuci.com · 连词成句 lian.diuci.com · 汉兜 handle.diuci.com
+
+   这份文件在四个仓里各存一份，字节必须完全一样（闸门 tools/check-ui.mjs 当场比）。
+   主站 ui/tokens.css 是正本；其余三站是副本。改令牌只改正本，四站一起改。
+
+   规矩：
+   1) 本站 CSS 只许引用这些名字，不许再定义一遍同名令牌；
+   2) 本站要自己的名字就用 var() 指过来（如 --c-primary:var(--cinnabar)），
+      不许把这些色值抄成字面量——抄一份就等于埋下「改一处漏一处」；
+   3) 本站特有的令牌（VitePress 映射、游戏语义色）留在本站文件里，
+      但值必须是 var() 或本站独有的新值，不得与这里的值撞车。
+   --------------------------------------------------------------------------- */
+
+/* 宣纸：白天的颜色 */
+:root{
+  --paper:#f4ede0;
+  --paper-2:#eae0cd;
+  --ink:#241f1a;
+  --ink-soft:#5b5147;
+  --ink-faint:#8a7f72;
+  --cinnabar:#c8442e;
+  --cinnabar-deep:#a33524;
+  --celadon:#5f8d7d;
+  --indigo:#3c5a78;
+  --gold:#c08a2e;
+  --line:#d8cbb4;
+  --shadow:0 2px 0 rgba(36,31,26,.06), 0 12px 32px -12px rgba(36,31,26,.18);
+  --radius:14px;
+  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun","STSong",serif;
+  --round:"ZCOOL KuaiLe","Noto Serif SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --brush:"ZCOOL XiaoWei","Noto Serif SC","Kaiti SC","STKaiti","KaiTi",serif;
+  /* 派生量：暗色主题只需覆写这些 */
+  --card-hi:#fdf8ec;
+  --card-lo:#f3e9d5;
+  --card-grad:linear-gradient(168deg,var(--card-hi),var(--card-lo));
+  --card-grad-2:linear-gradient(168deg,var(--surface-hi),#f2e8d4);
+  --surface:rgba(255,253,247,.62);
+  --surface-2:rgba(255,253,247,.55);
+  --surface-3:rgba(244,237,224,.66);
+  --surface-hi:#fdf9ef;
+  --nav-bg:rgba(244,237,224,.82);
+  --wash-1:rgba(192,138,46,.10);
+  --wash-2:rgba(200,68,46,.07);
+  --wash-3:rgba(60,90,120,.06);
+  --tag-bg:rgba(36,31,26,.07);
+  --grain-op:.5;
+  --on-accent:#fdf8ee;
+  color-scheme:light;
+}
+
+/* 夜墨：宣纸翻到背面。双选择器是防首帧漏配：data-theme 由脚本写，
+   html.dark 给 UnoCSS / VitePress 的 dark: 变体用 */
+:root[data-theme="dark"],
+html.dark{
+  --paper:#17140f;
+  --paper-2:#241f18;
+  --ink:#f0e7d6;
+  --ink-soft:#c3b8a5;
+  --ink-faint:#948a79;
+  --cinnabar:#e2694c;
+  --cinnabar-deep:#f07f61;
+  --celadon:#7fae9c;
+  --indigo:#7d9dc0;
+  --gold:#d3a44a;
+  --line:#3b342a;
+  --shadow:0 2px 0 rgba(0,0,0,.2), 0 14px 36px -14px rgba(0,0,0,.6);
+  --card-hi:#2b2519;
+  --card-lo:#1d1811;
+  --card-grad:linear-gradient(168deg,var(--card-hi),var(--card-lo));
+  --card-grad-2:linear-gradient(168deg,var(--surface-hi),#1b1610);
+  --surface:rgba(52,45,35,.5);
+  --surface-2:rgba(48,42,33,.55);
+  --surface-3:rgba(38,33,26,.6);
+  --surface-hi:#28221a;
+  --nav-bg:rgba(23,20,15,.86);
+  --wash-1:rgba(211,164,74,.09);
+  --wash-2:rgba(226,105,76,.08);
+  --wash-3:rgba(125,157,192,.07);
+  --tag-bg:rgba(240,231,214,.09);
+  --grain-op:.24;
+  --on-accent:#1a1610;
+  color-scheme:dark;
+}
+
+/* 顶栏两枚圆钮的统一尺寸（繁/简 在前，明暗在后）。
+   四站同一份数字：桌面 38px，窄屏 34px。改这里就改四站。 */
+:root{
+  --btn-round:38px;
+  --btn-round-sm:34px;
+}
+@media (max-width:768px){
+  :root{ --btn-round:var(--btn-round-sm); }
+}
+
+/* 首帧防闪：脚本还没接管（data-theme 未写）时，系统暗色先铺暗色变量。
+   data-theme 一旦写入，本分支因特异性更低而失效。 */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --paper:#17140f;
+    --paper-2:#241f18;
+    --ink:#f0e7d6;
+    --ink-soft:#c3b8a5;
+    --ink-faint:#948a79;
+    --cinnabar:#e2694c;
+    --cinnabar-deep:#f07f61;
+    --celadon:#7fae9c;
+    --indigo:#7d9dc0;
+    --gold:#d3a44a;
+    --line:#3b342a;
+    --shadow:0 2px 0 rgba(0,0,0,.2), 0 14px 36px -14px rgba(0,0,0,.6);
+    --card-hi:#2b2519;
+    --card-lo:#1d1811;
+    --card-grad:linear-gradient(168deg,var(--card-hi),var(--card-lo));
+    --card-grad-2:linear-gradient(168deg,var(--surface-hi),#1b1610);
+    --surface:rgba(52,45,35,.5);
+    --surface-2:rgba(48,42,33,.55);
+    --surface-3:rgba(38,33,26,.6);
+    --surface-hi:#28221a;
+    --nav-bg:rgba(23,20,15,.86);
+    --wash-1:rgba(211,164,74,.09);
+    --wash-2:rgba(226,105,76,.08);
+    --wash-3:rgba(125,157,192,.07);
+    --tag-bg:rgba(240,231,214,.09);
+    --grain-op:.24;
+    --on-accent:#1a1610;
+    color-scheme:dark;
+  }
+}

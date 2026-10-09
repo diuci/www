@@ -1,0 +1,12 @@
+{
+  "page": "index.html",
+  "dict": "ui/hant.json",
+  "chars": "ui/simp-only-chars.json",
+  "runtimeStrings": [
+    "切换深色模式",
+    "切换浅色模式",
+    "繁简切换",
+    "繁",
+    "简"
+  ]
+}

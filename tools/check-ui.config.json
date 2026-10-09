@@ -1,0 +1,53 @@
+{
+  "tokens": "ui/tokens.css",
+  "tokensSha256": "75984d334e4fc6d2107bc9ed12a770fbad74c6f643bdb014c2cc33786120453b",
+  "css": [
+    "index.html"
+  ],
+  "nav": [
+    {
+      "file": "index.html",
+      "start": "<nav>",
+      "end": "</nav>"
+    }
+  ],
+  "footer": [
+    {
+      "file": "index.html",
+      "start": "<footer>",
+      "end": "</footer>"
+    }
+  ],
+  "sidebar": [],
+  "parkOrder": [
+    {
+      "file": "index.html",
+      "start": "<nav>",
+      "end": "</nav>"
+    },
+    {
+      "file": "index.html",
+      "start": "<footer>",
+      "end": "</footer>"
+    }
+  ],
+  "legalLinks": [
+    "/sources",
+    "/accuracy",
+    "/legal"
+  ],
+  "parks": [
+    "首页",
+    "学古诗",
+    "连词成句",
+    "汉兜",
+    "遗失月冕",
+    "丢词大作战"
+  ],
+  "langBtnClass": "dc-lang-btn",
+  "themeBtnClass": "dc-theme-btn",
+  "sidebarSelectors": [
+    ".VPSidebar",
+    ".dc-sidebar"
+  ]
+}

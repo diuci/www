@@ -62,6 +62,21 @@ jobs:
           node tools/check-legal.mjs --selftest
           node tools/check-legal.mjs
 
+      - name: 四站 UI 闸门
+        # 令牌副本字节一致、顶栏两枚圆钮、繁简钮文案、说明页只在页脚、乐园顺序（规范 §1—§8）。
+        run: |
+          set -euo pipefail
+          node tools/check-ui.mjs --selftest
+          node tools/check-ui.mjs
+
+      - name: 繁简字典闸门
+        # 每一段页面文案都得有繁体译法；字典里不许留着页面找不到的死键；
+        # 繁体侧不许出现只有简体才用的字。
+        run: |
+          set -euo pipefail
+          node tools/check-hant.mjs --selftest
+          node tools/check-hant.mjs
+
       - name: 校验仓库首页内容完整
         # 这一步只读仓库里的 index.html，不依赖网络，因此永远可靠。
         # 它能拦住「覆盖文件时内容被截断/清空」这类最危险的误操作。

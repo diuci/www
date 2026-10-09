@@ -17,73 +17,11 @@
 })();
 </script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c8442e'/%3E%3Ctext x='32' y='45' font-size='40' text-anchor='middle' fill='%23f7f1e3' font-family='serif'%3E%E8%AF%8D%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/ui/tokens.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 <style>
-:root{
-  --paper:#f4ede0;
-  --paper-2:#eae0cd;
-  --ink:#241f1a;
-  --ink-soft:#5b5147;
-  --ink-faint:#8a7f72;
-  --cinnabar:#c8442e;
-  --cinnabar-deep:#a33524;
-  --celadon:#5f8d7d;
-  --indigo:#3c5a78;
-  --gold:#c08a2e;
-  --line:#d8cbb4;
-  --shadow:0 2px 0 rgba(36,31,26,.06), 0 12px 32px -12px rgba(36,31,26,.18);
-  --radius:14px;
-  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun","STSong",serif;
-  --round:"ZCOOL KuaiLe","Noto Serif SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
-  --brush:"ZCOOL XiaoWei","Noto Serif SC","Kaiti SC","STKaiti","KaiTi",serif;
-  /*派生量：暗色主题只需覆写这些*/
-  --card-grad:linear-gradient(168deg,#fdf8ec,#f3e9d5);
-  --card-grad-2:linear-gradient(168deg,#fdf9ef,#f2e8d4);
-  --surface:rgba(255,253,247,.62);
-  --surface-2:rgba(255,253,247,.55);
-  --surface-3:rgba(244,237,224,.66);
-  --surface-hi:#fdf9ef;
-  --nav-bg:rgba(244,237,224,.82);
-  --wash-1:rgba(192,138,46,.10);
-  --wash-2:rgba(200,68,46,.07);
-  --wash-3:rgba(60,90,120,.06);
-  --tag-bg:rgba(36,31,26,.07);
-  --grain-op:.5;
-  --on-accent:#fdf8ee;
-  color-scheme:light;
-}
-
-/* ── 夜墨：宣纸翻到背面 ── */
-:root[data-theme="dark"]{
-  --paper:#17140f;
-  --paper-2:#241f18;
-  --ink:#f0e7d6;
-  --ink-soft:#c3b8a5;
-  --ink-faint:#948a79;
-  --cinnabar:#e2694c;
-  --cinnabar-deep:#f07f61;
-  --celadon:#7fae9c;
-  --indigo:#7d9dc0;
-  --gold:#d3a44a;
-  --line:#3b342a;
-  --shadow:0 2px 0 rgba(0,0,0,.2), 0 14px 36px -14px rgba(0,0,0,.6);
-  --card-grad:linear-gradient(168deg,#2b2519,#1d1811);
-  --card-grad-2:linear-gradient(168deg,#292319,#1b1610);
-  --surface:rgba(52,45,35,.5);
-  --surface-2:rgba(48,42,33,.55);
-  --surface-3:rgba(38,33,26,.6);
-  --surface-hi:#28221a;
-  --nav-bg:rgba(23,20,15,.86);
-  --wash-1:rgba(211,164,74,.09);
-  --wash-2:rgba(226,105,76,.08);
-  --wash-3:rgba(125,157,192,.07);
-  --tag-bg:rgba(240,231,214,.09);
-  --grain-op:.24;
-  --on-accent:#1a1610;
-  color-scheme:dark;
-}
 
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -138,18 +76,26 @@ nav{
 .brand-s{display:block;font-family:var(--round);font-size:10px;color:var(--ink-faint);letter-spacing:.24em;margin-top:1px}
 
 /* 主题切换：一枚会转的日月印 */
-.theme-btn{
+.dc-theme-btn{
   width:38px;height:38px;flex:0 0 38px;border-radius:50%;cursor:pointer;
   background:var(--surface);border:1px solid var(--line);
   color:var(--ink);display:grid;place-items:center;padding:0;
   transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .25s,border-color .25s,color .25s;
 }
-.theme-btn:hover{transform:rotate(18deg) scale(1.08);border-color:var(--cinnabar)}
-.theme-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
-.theme-btn .i-sun{display:block}
-.theme-btn .i-moon{display:none}
-:root[data-theme="dark"] .theme-btn .i-sun{display:none}
-:root[data-theme="dark"] .theme-btn .i-moon{display:block}
+.dc-theme-btn:hover{transform:rotate(18deg) scale(1.08);border-color:var(--cinnabar)}
+.dc-theme-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+.dc-theme-btn .i-sun{display:block}
+.dc-theme-btn .i-moon{display:none}
+/* 繁简钮：与明暗钮同尺寸同描边，字用圆体（规范 §2、§3） */
+.dc-lang-btn{
+  width:var(--btn-round);height:var(--btn-round);flex:0 0 var(--btn-round);border-radius:50%;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink);
+  font-family:var(--round);font-size:15px;display:grid;place-items:center;padding:0;
+  transition:background .25s,border-color .25s,color .25s;
+}
+.dc-lang-btn:hover{color:var(--cinnabar);border-color:var(--cinnabar)}
+:root[data-theme="dark"] .dc-theme-btn .i-sun{display:none}
+:root[data-theme="dark"] .dc-theme-btn .i-moon{display:block}
 .nav-links{display:flex;gap:26px;margin-left:auto;list-style:none}
 .nav-links a{
   color:var(--ink-soft);text-decoration:none;font-size:14.5px;
@@ -426,8 +372,8 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
   .brand-t{font-size:18px}
   .brand-s{font-size:9px;letter-spacing:.2em}
   .seal{width:34px;height:34px;flex:0 0 34px;font-size:20px;border-radius:8px}
-  .theme-btn{width:34px;height:34px;flex:0 0 34px}
-  .theme-btn svg{width:17px;height:17px}
+  .dc-theme-btn{width:34px;height:34px;flex:0 0 34px}
+  .dc-theme-btn svg{width:17px;height:17px}
   .nav-cta{font-size:13.5px;padding:8px 15px}
   .hero-art{
     --safe:17px; --step:140px; --hstep:64px; --inset:10px;
@@ -467,8 +413,8 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
   .brand-t{font-size:18px}
   .brand-s{font-size:9px;letter-spacing:.2em}
   .seal{width:34px;height:34px;flex:0 0 34px;font-size:20px;border-radius:8px}
-  .theme-btn{width:34px;height:34px;flex:0 0 34px}
-  .theme-btn svg{width:17px;height:17px}
+  .dc-theme-btn{width:34px;height:34px;flex:0 0 34px}
+  .dc-theme-btn svg{width:17px;height:17px}
   .nav-cta{font-size:13.5px;padding:8px 15px}
   .wrap{padding:0 16px}
 
@@ -569,7 +515,8 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       <li><a href="https://moon.diuci.com/">遗失月冕</a></li>
       <li><a href="https://ink.diuci.com/">丢词大作战</a></li>
     </ul>
-    <button class="theme-btn" id="themeBtn" type="button" aria-label="切换深色模式" title="切换深色模式">
+    <button class="dc-lang-btn" id="langBtn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>
+    <button class="dc-theme-btn" id="themeBtn" type="button" aria-label="切换深色模式" title="切换深色模式">
       <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="4.2"/>
         <path d="M12 2.4v2.1M12 19.5v2.1M2.4 12h2.1M19.5 12h2.1M5.2 5.2l1.5 1.5M17.3 17.3l1.5 1.5M18.8 5.2l-1.5 1.5M6.7 17.3l-1.5 1.5"/>
@@ -770,6 +717,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       丢词夺理 diuci.com · 给孩子的古诗文<br>
       共 253 篇 · 课标要求的 207 篇全部收录<br>
       <a href="https://k12.diuci.com/legal">原文公有领域 · 注释 CC BY 4.0 · 代码 MIT · 版权与免责</a>
+      <a href="https://k12.diuci.com/accuracy">内容准确性与台账</a> · <a href="https://k12.diuci.com/sources">数据来源与版权</a>
     </div>
     <nav>
       <a href="https://k12.diuci.com/">学古诗</a>
@@ -847,8 +795,10 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
 
   function label(t){
     var on=t==='dark';
-    btn.setAttribute('aria-label',on?'切换浅色模式':'切换深色模式');
-    btn.setAttribute('title',on?'切换浅色模式':'切换深色模式');
+    var s=on?'切换浅色模式':'切换深色模式';
+    if(root.dataset.script==='hant'&&HANT[s])s=HANT[s];
+    btn.setAttribute('aria-label',s);
+    btn.setAttribute('title',s);
   }
   function apply(t){
     root.dataset.theme=t;
@@ -872,6 +822,78 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
   };
   if(mq.addEventListener) mq.addEventListener('change',onSys);
   else if(mq.addListener) mq.addListener(onSys);
+
+  // ── 繁简切换（规范 §3）──
+  // 字典是 ui/hant.json。缺译必须当场说话：静默退回简体，等于页面上半繁半简还没人知道。
+  var langBtn=document.getElementById('langBtn');
+  var HANT=null,ORIG=[];
+  function cjk(s){return /[\u4e00-\u9fff]/.test(s)}
+  function collect(){
+    var w=document.createTreeWalker(document.documentElement,NodeFilter.SHOW_TEXT,null),n;
+    while((n=w.nextNode())){
+      var raw=n.nodeValue,t=raw.trim();
+      if(!t||!cjk(t))continue;
+      var p=n.parentElement;
+      if(!p||p.tagName==='STYLE'||p.tagName==='SCRIPT'||p.tagName==='NOSCRIPT')continue;
+      if(p.closest&&p.closest('#langBtn'))continue;
+      ORIG.push({node:n,raw:raw});
+    }
+    var nodes=document.querySelectorAll('[title],[aria-label]');
+    for(var i=0;i<nodes.length;i++){
+      var e=nodes[i];
+      ['title','aria-label'].forEach(function(a){
+        var v=e.getAttribute(a);
+        if(v&&cjk(v)&&v!=='繁简切换')ORIG.push({el:e,attr:a,val:v});
+      });
+    }
+    var metas=document.querySelectorAll('meta[name="description"],meta[property="og:description"]');
+    for(var j=0;j<metas.length;j++){
+      var v2=metas[j].getAttribute('content');
+      if(v2&&cjk(v2))ORIG.push({el:metas[j],attr:'content',val:v2});
+    }
+  }
+  function applyScript(mode){
+    var hant=mode==='hant';
+    root.dataset.script=hant?'hant':'hans';
+    document.documentElement.lang=hant?'zh-Hant':'zh-CN';
+    langBtn.textContent=hant?'简':'繁';
+    if(!hant){
+      ORIG.forEach(function(o){if(o.node)o.node.nodeValue=o.raw;else o.el.setAttribute(o.attr,o.val)});
+      label(root.dataset.theme||'light');
+      return;
+    }
+    if(!HANT){console.error('[繁简] 字典还没到，这一遍只能留在简体');return}
+    var miss=[];
+    ORIG.forEach(function(o){
+      if(o.node){
+        var raw2=o.node.nodeValue,t=o.raw.trim();
+        var v=HANT[t];
+        if(v===undefined){if(t!=='繁'&&t!=='简')miss.push(t);return}
+        var at=o.raw.indexOf(t);
+        o.node.nodeValue=o.raw.slice(0,at)+v+o.raw.slice(at+t.length);
+      }else{
+        var v3=HANT[o.val];
+        if(v3===undefined){miss.push(o.val);return}
+        o.el.setAttribute(o.attr,v3);
+      }
+    });
+    if(miss.length)console.error('[繁简] 字典里没有这些译法，页面上还留着简体：'+JSON.stringify(miss));
+    label(root.dataset.theme||'light');
+  }
+  collect();
+  fetch('/ui/hant.json').then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(j){
+    HANT=j;
+    var s=null;try{s=localStorage.getItem('dc-script')}catch(e){}
+    applyScript(s==='hant'?'hant':'hans');
+  }).catch(function(e){console.error('[繁简] 字典读不到：'+e)});
+  langBtn.addEventListener('click',function(){
+    var t=root.dataset.script==='hant'?'hans':'hant';
+    try{localStorage.setItem('dc-script',t)}catch(e){}
+    applyScript(t);
+  });
 
   // 进场动画
   var els=document.querySelectorAll('.rv');
