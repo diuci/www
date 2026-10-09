@@ -2,3 +2,7 @@
 _shots/
 
 .DS_Store
+
+# 本地闸门用的依赖（check-buttons.mjs 要 puppeteer-core）；
+# 本站是 Pages 分支部署，仓库根目录就是线上内容，node_modules 绝不能上线。
+node_modules/
