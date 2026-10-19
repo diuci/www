@@ -1,0 +1,13 @@
+# 设计令牌必须逐字节一致：_deploy/ui/tokens.css 是正本，其余五站各存一份副本，
+# tools/check-ui.mjs 按 sha256 当场比对。任何一次 checkout 把 LF 变成 CRLF，
+# 六个仓的闸门就一起报红 —— 而且症状与「有人偷偷改了配色」一模一样，难分辨。
+#
+# 本机 core.autocrlf=true（Windows 默认），所以必须在这里钉死：令牌文件不做任何转换。
+* text=auto eol=lf
+
+# 令牌正本与五份副本：绝不转换
+ui/tokens.css      -text
+*/tokens.css       -text
+
+# 闸门脚本同理：自测样本里逐字节比对，转换了就抓不到真正的坏例子
+*/tools/check-ui.mjs -text
