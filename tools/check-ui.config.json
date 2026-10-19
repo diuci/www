@@ -1,6 +1,6 @@
 {
   "tokens": "ui/tokens.css",
-  "tokensSha256": "75984d334e4fc6d2107bc9ed12a770fbad74c6f643bdb014c2cc33786120453b",
+  "tokensSha256": "1dc7fa43afa870c3fde8b52f9e2b90b23d819d37dadde3dc79e1bdb6d5ae1985",
   "css": [
     "index.html"
   ],
@@ -39,10 +39,12 @@
   "parks": [
     "首页",
     "学古诗",
-    "连词成句",
+    "画甲骨",
+    "连词",
+    "猜谜",
     "汉兜",
-    "遗失月冕",
-    "丢词大作战"
+    "月冕",
+    "大作战"
   ],
   "langBtnClass": "dc-lang-btn",
   "themeBtnClass": "dc-theme-btn",

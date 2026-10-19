@@ -10,7 +10,7 @@
     R5 繁简钮的文案必须是单字「繁」或「简」
     R6 说明类页面（数据来源 / 准确性 / 版权免责）只能在页脚出现
     R7 侧栏不得有自己的滚动条
-    R8 六个乐园的名字与顺序，顶栏与页脚必须一致
+    R8 八项乐园的名字与顺序，顶栏与页脚必须一致
 
   规矩：闸门自己也要被试。--selftest 当场数坏例子，一个没抓到就退出。
 */
@@ -158,7 +158,15 @@ rule('R3', '本站 CSS 不得把正本里的色值抄成字面量', (cfg, files)
 
 rule('R4', '顶栏必须同时有繁简钮与明暗钮', (cfg, files) => {
   const problems = []
-  for (const cls of [cfg.langBtnClass, cfg.themeBtnClass]) {
+  // 繁简钮豁免（规范 §3.1）：内容与繁简无关的站（当前：画甲骨，内容是古文字）
+  // 可以在自己的 config 里写 allowNoLangBtn:true，但必须同时写清原因，
+  // 且明暗钮照样强制——豁免的是「繁简」这一枚，不是「圆钮」这件事。
+  const skipLang = cfg.allowNoLangBtn === true
+  if (skipLang && !cfg.allowNoLangBtnReason) {
+    problems.push('config 写了 allowNoLangBtn:true 却没有 allowNoLangBtnReason：不许无声豁免')
+  }
+  const want = skipLang ? [cfg.themeBtnClass] : [cfg.langBtnClass, cfg.themeBtnClass]
+  for (const cls of want) {
     if (!files.nav.some(f => f.text.includes(cls))) {
       problems.push('顶栏里没有 ' + cls + '：两枚圆钮少一枚（繁简钮在明暗钮左边）')
     }
@@ -212,7 +220,7 @@ rule('R7', '侧栏不得有自己的滚动条', (cfg, files) => {
   return problems
 })
 
-rule('R8', '六个乐园的名字与顺序必须一致', (cfg, files) => {
+rule('R8', '八项乐园的名字与顺序必须一致', (cfg, files) => {
   const problems = []
   const seenKeys = new Set()
   for (const { rel, text } of files.parks) {
@@ -266,8 +274,10 @@ function selftest(dir, cfg, tokensText) {
   const goodNav = [
     '<nav class="dc-nav">',
     '<a href="https://diuci.com/">首页</a><a href="https://k12.diuci.com/">学古诗</a>',
-    '<a href="https://lian.diuci.com/">连词成句</a><a href="https://handle.diuci.com/">汉兜</a>',
-    '<a href="https://moon.diuci.com/">遗失月冕</a><a href="https://ink.diuci.com/">丢词大作战</a>',
+    '<a href="https://jiagu.diuci.com/">画甲骨</a>',
+    '<a href="https://lian.diuci.com/">连词</a><a href="https://zimi.diuci.com/">猜谜</a>',
+    '<a href="https://handle.diuci.com/">汉兜</a>',
+    '<a href="https://moon.diuci.com/">月冕</a><a href="https://ink.diuci.com/">大作战</a>',
     '<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>',
     '<button class="dc-theme-btn" type="button" aria-label="切换深色模式"></button>',
     '</nav>',
@@ -275,8 +285,10 @@ function selftest(dir, cfg, tokensText) {
   const goodFooter = [
     '<footer>',
     '<a href="https://diuci.com/">首页</a><a href="https://k12.diuci.com/">学古诗</a>',
-    '<a href="https://lian.diuci.com/">连词成句</a><a href="https://handle.diuci.com/">汉兜</a>',
-    '<a href="https://moon.diuci.com/">遗失月冕</a><a href="https://ink.diuci.com/">丢词大作战</a>',
+    '<a href="https://jiagu.diuci.com/">画甲骨</a>',
+    '<a href="https://lian.diuci.com/">连词</a><a href="https://zimi.diuci.com/">猜谜</a>',
+    '<a href="https://handle.diuci.com/">汉兜</a>',
+    '<a href="https://moon.diuci.com/">月冕</a><a href="https://ink.diuci.com/">大作战</a>',
     '<a href="/sources">数据来源与版权</a><a href="/accuracy">内容准确性</a><a href="/legal">版权与免责</a>',
     '</footer>',
   ].join('\n')
@@ -310,8 +322,20 @@ function selftest(dir, cfg, tokensText) {
   add('R2', 'html 的 <style> 里重定义 --paper', swap(good(), 'css', 'a.css', '<style>:root{--paper:#ffffff}</style>'))
   add('R3', '把正本色抄成字面量 #c8442e', swap(good(), 'css', 'a.css', '.x{color:#c8442e}'))
   add('R3', '把正本半透明色抄成字面量', swap(good(), 'css', 'a.css', '.x{background:rgba(255,253,247,.62)}'))
-  add('R4', '顶栏少了繁简钮', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', '')))
   add('R4', '顶栏少了明暗钮', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-theme-btn" type="button" aria-label="切换深色模式"></button>', '')))
+  // 这一例要按「本站没豁免」来试：跑 selftest 的站可能自己配了 allowNoLangBtn
+  // （画甲骨就是），拿本站的 config 去试「少了繁简钮」当然抓不住——那是合法的。
+  // 规矩本身得在没豁免的前提下被验到，所以这里显式把豁免摘掉再试。
+  const cfgNoExempt = JSON.parse(JSON.stringify(cfg)); delete cfgNoExempt.allowNoLangBtn; delete cfgNoExempt.allowNoLangBtnReason
+  add('R4', '顶栏少了繁简钮（按未豁免的情形试）', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', '')), () => cfgNoExempt)
+  // 繁简钮豁免的三条坏例子（规范 §3.1）：
+  //  ① 豁免了但没写原因 —— 不许无声豁免
+  //  ② 豁免了繁简钮，顺手把明暗钮也删了 —— 豁免的是繁简那一枚，不是圆钮这件事
+  //  ③ 没豁免却少了繁简钮 —— 老老实实报出来
+  const cfgExemptBad1 = JSON.parse(JSON.stringify(cfg)); cfgExemptBad1.allowNoLangBtn = true; delete cfgExemptBad1.allowNoLangBtnReason
+  add('R4', '繁简钮豁免了却没写原因', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', '')), () => cfgExemptBad1)
+  const cfgExemptOk = JSON.parse(JSON.stringify(cfg)); cfgExemptOk.allowNoLangBtn = true; cfgExemptOk.allowNoLangBtnReason = '本站内容为古文字，无繁简之分'
+  add('R4', '豁免了繁简钮，明暗钮也跟着没了', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', '').replace('<button class="dc-theme-btn" type="button" aria-label="切换深色模式"></button>', '')), () => cfgExemptOk)
   add('R5', '繁简钮写了「繁體」两个字', swap(good(), 'nav', 'nav.html', goodNav.replace('>繁</button>', '>繁體</button>')))
   add('R5', '繁简钮写了「繁简」', swap(good(), 'nav', 'nav.html', goodNav.replace('>繁</button>', '>繁简</button>')))
   add('R5', '繁简钮的 ternary 写成了两个字', swap(good(), 'nav', 'nav.html', goodNav.replace('>繁</button>', "{{ isHant ? '簡體' : '繁體' }}</button>")))
@@ -319,12 +343,12 @@ function selftest(dir, cfg, tokensText) {
   add('R6', '页脚里没有准确性页', swap(good(), 'footer', 'footer.html', goodFooter.replace('<a href="/accuracy">内容准确性</a>', '')))
   add('R7', '侧栏给了自己滚动条', swap(good(), 'css', 'a.css', '.VPSidebar{overflow-y:auto}'))
   add('R7', '侧栏给了 max-height（等于给它自己的滚动范围）', swap(good(), 'css', 'a.css', '.VPSidebar{max-height:calc(100vh - 64px)}'))
-  add('R8', '六个乐园顺序颠倒', swap(good(), 'nav', 'nav.html', goodNav.replace('学古诗</a>', '学古诗占位</a>').replace('>首页</a>', '>连词成句</a>').replace('>连词成句</a><a href="https://handle', '>首页</a><a href="https://handle')))
-  add('R8', '六个乐园少了一个', swap(good(), 'nav', 'nav.html', goodNav.replace('<a href="https://moon.diuci.com/">遗失月冕</a>', '')))
+  add('R8', '八项乐园顺序颠倒', swap(good(), 'nav', 'nav.html', goodNav.replace('学古诗</a>', '学古诗占位</a>').replace('>首页</a>', '>连词</a>').replace('>连词</a><a href="https://handle', '>首页</a><a href="https://handle')))
+  add('R8', '八项乐园少了一个', swap(good(), 'nav', 'nav.html', goodNav.replace('<a href="https://moon.diuci.com/">月冕</a>', '')))
   // 词典键写法的站：坏例子 = 对照表里留着一个页面里根本没有的键
   const Q = "'"
-  const dictNav = '<nav class="dc-nav">' + ['parks.home', 'parks.k12', 'parks.lian', 'parks.handle', 'parks.moon', 'parks.ink'].map(k => '<a href="https://x/">{{ t(' + Q + k + Q + ') }}</a>').join('') + '</nav>'
-  const cfgBad3 = JSON.parse(JSON.stringify(cfg)); cfgBad3.localeLabels = { 'parks.home': '首页', 'parks.k12': '学古诗', 'parks.lian': '连词成句', 'parks.handle': '汉兜', 'parks.moon': '遗失月冕', 'parks.ink': '丢词大作战', 'parks.gone': '首页' }
+  const dictNav = '<nav class="dc-nav">' + ['parks.home', 'parks.k12', 'parks.jiagu', 'parks.lian', 'parks.zimi', 'parks.handle', 'parks.moon', 'parks.ink'].map(k => '<a href="https://x/">{{ t(' + Q + k + Q + ') }}</a>').join('') + '</nav>'
+  const cfgBad3 = JSON.parse(JSON.stringify(cfg)); cfgBad3.localeLabels = { 'parks.home': '首页', 'parks.k12': '学古诗', 'parks.jiagu': '画甲骨', 'parks.lian': '连词', 'parks.zimi': '猜谜', 'parks.handle': '汉兜', 'parks.moon': '月冕', 'parks.ink': '大作战', 'parks.gone': '首页' }
   add('R8', '乐园词典对照表里留着一个页面里找不到的键', { ...good(), parks: [{ rel: 'nav.html', text: dictNav }] }, () => cfgBad3)
 
   let tried = 0, caught = 0
@@ -339,6 +363,17 @@ function selftest(dir, cfg, tokensText) {
   for (const r of RULES) {
     const probs = runRule(r.id, cfg, good())
     if (probs.length) { tried++; console.error('  好例子被误报：' + r.id + ' ' + r.title + ' → ' + probs[0]) }
+  }
+  // 豁免场景本身也要是好例子：配了 allowNoLangBtn + 原因、顶栏只有明暗钮 —— R4 不该报。
+  // （不这么验，豁免开关就成了一个「什么都放行」的后门。）
+  const cfgExemptGood = JSON.parse(JSON.stringify(cfg))
+  cfgExemptGood.allowNoLangBtn = true
+  cfgExemptGood.allowNoLangBtnReason = '本站内容为古文字，无繁简之分'
+  const exemptFiles = swap(good(), 'nav', 'nav.html',
+    goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', ''))
+  for (const rid of ['R4', 'R5']) {
+    const probs = runRule(rid, cfgExemptGood, exemptFiles)
+    if (probs.length) { tried++; console.error('  豁免场景的好例子被误报：' + rid + ' → ' + probs[0]) }
   }
   if (caught !== tried) {
     console.error('[check-ui] --selftest 失败：试了 ' + tried + ' 例，抓住 ' + caught + ' 例')

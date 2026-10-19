@@ -1,9 +1,9 @@
 /* ---------------------------------------------------------------------------
-   丢词夺理四站共用的设计令牌（唯一事实源）
-   主站 diuci.com · 学古诗 k12.diuci.com · 连词成句 lian.diuci.com · 汉兜 handle.diuci.com
+   丢词夺理全站共用的设计令牌（唯一事实源）
+   主站 diuci.com · 学古诗 k12.diuci.com · 连词 lian.diuci.com · 汉兜 handle.diuci.com · 画甲骨 jiagu.diuci.com · 猜谜 zimi.diuci.com
 
-   这份文件在四个仓里各存一份，字节必须完全一样（闸门 tools/check-ui.mjs 当场比）。
-   主站 ui/tokens.css 是正本；其余三站是副本。改令牌只改正本，四站一起改。
+   这份文件在六个仓里各存一份，字节必须完全一样（闸门 tools/check-ui.mjs 当场比）。
+   主站 ui/tokens.css 是正本；其余五站是副本。改令牌只改正本，六站一起改。
 
    规矩：
    1) 本站 CSS 只许引用这些名字，不许再定义一遍同名令牌；

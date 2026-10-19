@@ -6,6 +6,10 @@
   这一条盯的是摆出来的样子：繁简钮在明暗钮左边、两枚同尺寸、正圆、
   桌面 38px、窄屏 34px。用户点名的就是「放在明暗切换边上，同样类似的样子」。
 
+  繁简钮豁免（规范 §3.1）：内容与繁简无关的站（当前：画甲骨）不摆繁简钮，
+  SITES 第四项写 { noLang: true }。豁免只放过「没有繁简钮」这一件事 ——
+  明暗钮照样必须在、照样要量尺寸与正圆，文案检查也只对存在的那一枚生效。
+
   只在本地跑：CI 里没有 Chrome，也没有兄弟仓。跑不了就别假装跑过。
   每个规则都配坏例子（--selftest）；空过的检查比没有检查更危险。
 */
@@ -17,16 +21,25 @@ const SITES = [
   ['主站 diuci.com', '.', 18792],
   ['学古诗 k12.diuci.com', '../k12-site/site/.vitepress/dist', 18791],
   ['汉兜 handle.diuci.com', '../handle-site/dist', 18793],
-  ['连词成句 lian.diuci.com', '../lian-site/dist', 18794],
+  ['连词 lian.diuci.com', '../lian-site/dist', 18794],
+  // 画甲骨：古文字站，无简繁之分，按规范 §3.1 豁免繁简钮（见该站 check-ui.config.json）
+  ['画甲骨 jiagu.diuci.com', '../jiagu-site/dist', 18795, { noLang: true }],
+  // 猜谜：繁简是换页，首页没有 /trad/ 对名页所以那枚钮不渲染，按规范 §3.2 逐页豁免首页
+  ['猜谜 zimi.diuci.com', '../zimi-site/site/.vitepress/dist', 18796, { noLangOnHome: true }],
 ]
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.txt': 'text/plain' }
 const VIEWPORTS = [{ width: 1180, height: 900, want: 38 }, { width: 390, height: 780, want: 34 }]
 
 /* 纯函数：判定不依赖浏览器，坏例子直接喂进来 */
-export function buttonProblems(geo, want) {
+export function buttonProblems(geo, want, opts = {}) {
+  // opts.noLang：本站按规范 §3.1 豁免繁简钮（内容与繁简无关，当前：画甲骨）。
+  //   只放过「没有繁简钮」这一件事 —— 明暗钮仍然是必须的，
+  //   下面那个 for 循环照旧量它（尺寸、正圆、38/34px）。
+  // opts.noLangOnHome：本页按规范 §3.2 不摆繁简钮（没有繁体对应页，当前：学古诗/猜谜的首页）。
+  const needLang = !opts.noLang && !opts.noLangOnHome
   const problems = []
   if (!geo) { problems.push('顶栏没有量到圆钮'); return problems }
-  if (!geo.lang) problems.push('顶栏没有繁简钮 .dc-lang-btn')
+  if (needLang && !geo.lang) problems.push('顶栏没有繁简钮 .dc-lang-btn')
   if (!geo.theme) problems.push('顶栏没有明暗钮 .dc-theme-btn')
   if (geo.lang && geo.theme) {
     if (geo.lang.x >= geo.theme.x)
@@ -110,6 +123,18 @@ function selftest() {
   if (goodProbs.length) { tried++; console.error('  好例子被误报 → ' + goodProbs[0]) }
   const goodNarrow = buttonProblems({ lang: { x: 300, w: 34, h: 34, radius: '50%', text: '简' }, theme: { x: 340, w: 34, h: 34, radius: '50%', text: '' } }, 34)
   if (goodNarrow.length) { tried++; console.error('  窄屏好例子被误报 → ' + goodNarrow[0]) }
+  // 豁免场景（规范 §3.1）：不摆繁简钮该放过，但豁免不能变成「什么都不查」的后门。
+  const exGood = { theme: { x: 940, w: 38, h: 38, radius: '50%', text: '' } }
+  if (buttonProblems(exGood, 38, { noLang: true }).length) { tried++; console.error('  豁免场景的好例子被误报') }
+  const exBadNoTheme = buttonProblems({ lang: { x: 900, w: 38, h: 38, radius: '50%', text: '繁' } }, 38, { noLang: true })
+  if (!exBadNoTheme.length) { tried++; console.error('  豁免了繁简钮，明暗钮也没了却没被抓') }
+  const exBadSize = buttonProblems({ theme: { x: 940, w: 30, h: 30, radius: '50%', text: '' } }, 38, { noLang: true })
+  if (!exBadSize.length) { tried++; console.error('  豁免了繁简钮，明暗钮尺寸不对却没被抓') }
+  // 逐页豁免（规范 §3.2）：只放过「这一页」，明暗钮仍要量。
+  if (buttonProblems(exGood, 38, { noLangOnHome: true }).length) { tried++; console.error('  逐页豁免的好例子被误报') }
+  if (!buttonProblems({ theme: { x: 940, w: 30, h: 30, radius: '50%', text: '' } }, 38, { noLangOnHome: true }).length) {
+    tried++; console.error('  逐页豁免了，明暗钮尺寸不对却没被抓')
+  }
   if (caught !== tried) { console.error('[check-buttons] --selftest 失败：试了 ' + tried + ' 例，抓住 ' + caught + ' 例'); process.exit(1) }
   console.log('[ok] check-buttons --selftest 通（当场数到 ' + tried + ' 个坏例子，全部试到）')
 }
@@ -139,7 +164,7 @@ if (!CHROME) { console.error('[check-buttons] 找不到 Chrome/Edge'); process.e
 const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: ['--no-sandbox', '--disable-dev-shm-usage'] })
 const problems = []
 let measured = 0
-for (const [name, dir, port] of SITES) {
+for (const [name, dir, port, siteOpts] of SITES) {
   const server = await serve(dir, port)
   if (!server) { problems.push(name + ' 没有构建产物（' + path.resolve(dir) + '）：先构建再跑这条闸门'); continue }
   for (const vp of VIEWPORTS) {
@@ -163,7 +188,7 @@ for (const [name, dir, port] of SITES) {
       }
     }
     measured++
-    for (const p of buttonProblems(geo, vp.want)) problems.push(name + '（' + vp.width + 'px）：' + p)
+    for (const p of buttonProblems(geo, vp.want, siteOpts || {})) problems.push(name + '（' + vp.width + 'px）：' + p)
     // 点一次，再量文案：两档必须正好是「繁」与「简」这一对
     if (geo.lang) {
       const before = geo.lang.text.trim()
@@ -185,4 +210,4 @@ if (problems.length) {
   console.error('[check-buttons] 失败：' + problems.length + ' 处不合规')
   process.exit(1)
 }
-console.log('[ok] check-buttons 通：四站顶栏两枚圆钮同尺寸、正圆、繁简在明暗左边')
+console.log('[ok] check-buttons 通：' + SITES.length + ' 站顶栏两枚圆钮同尺寸、正圆、繁简在明暗左边')
