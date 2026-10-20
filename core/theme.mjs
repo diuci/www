@@ -12,17 +12,49 @@
 
 export const THEME_KEY = 'dc-theme'
 export const THEME_COLORS = { dark: '#17140f', light: '#f4ede0' }
+// v4：主题存 cookie（domain=.diuci.com）——子站与主站共享，切一次全站跟着变。
+// localStorage 子域不共享，只读一次作迁移：老用户已选的主题迁进 cookie 后即弃。
+export const THEME_COOKIE = 'dc-theme'
 
-/** 首帧内联脚本：构建时插进 index.html（<head> 里、样式表之前）。
+export function readCookie(name) {
+  const hit = document.cookie.split(/;\s*/).find(c => c.startsWith(name + '='))
+  return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null
+}
+
+export function writeCookie(mode) {
+  document.cookie = THEME_COOKIE + '=' + mode + ';domain=.diuci.com;path=/;max-age=31536000;SameSite=Lax'
+}
+
+/** 三级判定：cookie > localStorage（迁移一次） > 系统偏好。 */
+export function detectTheme() {
+  let mode = null
+  try { mode = readCookie(THEME_COOKIE) } catch (e) {}
+  if (mode !== 'dark' && mode !== 'light') {
+    try { mode = localStorage.getItem(THEME_KEY) } catch (e) {}
+    if (mode === 'dark' || mode === 'light') { try { writeCookie(mode) } catch (e) {} }
+    else mode = null
+  }
+  if (mode !== 'dark' && mode !== 'light')
+    mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return mode
+}
+
+/** 首帧内联脚本：构建时插进 index.html（<head> 里、样式表之前）。必须在 CSS 之前
+ *  执行：暗色用户不闪白屏（规范 §4）。以前这段每站手抄一份，现在唯一来源。
  *  含 MutationObserver：任何代码切主题（改 data-theme）都同步地址栏色。 */
 export const THEME_BOOTSTRAP = `;(function () {
   var t = document.documentElement
   var m = document.querySelector('meta[name="theme-color"]')
-  var saved = null
-  try { saved = localStorage.getItem('${THEME_KEY}') } catch (e) {}
-  var mode = saved === 'dark' || saved === 'light'
-    ? saved
-    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  function rc(n) { var h = document.cookie.split(/;\\s*/).find(function(c){return c.indexOf(n+'=')===0}); return h ? h.slice(n.length+1) : null }
+  function wc(v) { document.cookie = '${THEME_COOKIE}=' + v + ';domain=.diuci.com;path=/;max-age=31536000;SameSite=Lax' }
+  var mode = rc('${THEME_COOKIE}')
+  if (mode !== 'dark' && mode !== 'light') {
+    try { mode = localStorage.getItem('${THEME_KEY}') } catch (e) {}
+    if (mode === 'dark' || mode === 'light') { try { wc(mode) } catch (e) {} }
+    else mode = null
+  }
+  if (mode !== 'dark' && mode !== 'light')
+    mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   t.setAttribute('data-theme', mode)
   t.classList.toggle('dark', mode === 'dark')
   t.classList.toggle('light', mode === 'light')
@@ -40,13 +72,9 @@ function apply(mode) {
   if (m) m.setAttribute('content', THEME_COLORS[mode] || THEME_COLORS.light)
 }
 
-/** 运行时初始化：与首帧脚本同一判定（saved > 系统偏好 > light）。 */
+/** 运行时初始化：与首帧脚本同一判定（cookie > localStorage 迁移 > 系统偏好）。 */
 export function initTheme() {
-  let saved = null
-  try { saved = localStorage.getItem(THEME_KEY) } catch (e) {}
-  const mode = saved === 'dark' || saved === 'light'
-    ? saved
-    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  const mode = detectTheme()
   apply(mode)
   return mode
 }
@@ -57,7 +85,7 @@ export function currentTheme() {
 
 export function setTheme(mode) {
   if (mode !== 'dark' && mode !== 'light') return currentTheme()
-  try { localStorage.setItem(THEME_KEY, mode) } catch (e) {}
+  try { writeCookie(mode) } catch (e) {}
   apply(mode)
   return mode
 }

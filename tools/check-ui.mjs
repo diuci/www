@@ -6,8 +6,7 @@
     R1 令牌副本必须与正本字节一致（sha256 钉在 config 里）
     R2 本站 CSS 不得重新定义正本里的同名令牌
     R3 本站 CSS 不得把正本里的色值抄成字面量
-    R4 顶栏必须同时有繁简钮（.dc-lang-btn）与明暗钮（.dc-theme-btn）
-    R5 繁简钮的文案必须是单字「繁」或「简」
+    R4 顶栏必须有明暗钮（.dc-theme-btn）
     R6 说明类页面（数据来源 / 准确性 / 版权免责）只能在页脚出现
     R7 侧栏不得有自己的滚动条
     R8 八项乐园的名字与顺序，顶栏与页脚必须一致
@@ -158,49 +157,22 @@ rule('R3', '本站 CSS 不得把正本里的色值抄成字面量', (cfg, files)
   return problems
 })
 
-rule('R4', '顶栏必须同时有繁简钮与明暗钮', (cfg, files) => {
+rule('R4', '顶栏必须有明暗钮', (cfg, files) => {
   const problems = []
-  // 繁简钮豁免（规范 §3.1）：内容与繁简无关的站（当前：画甲骨，内容是古文字）
-  // 可以在自己的 config 里写 allowNoLangBtn:true，但必须同时写清原因，
-  // 且明暗钮照样强制——豁免的是「繁简」这一枚，不是「圆钮」这件事。
-  const skipLang = cfg.allowNoLangBtn === true
-  if (skipLang && !cfg.allowNoLangBtnReason) {
-    problems.push('config 写了 allowNoLangBtn:true 却没有 allowNoLangBtnReason：不许无声豁免')
-  }
-  const want = skipLang ? [cfg.themeBtnClass] : [cfg.langBtnClass, cfg.themeBtnClass]
-  for (const cls of want) {
-    if (!files.nav.some(f => f.text.includes(cls))) {
-      problems.push('顶栏里没有 ' + cls + '：两枚圆钮少一枚（繁简钮在明暗钮左边）')
-    }
+  // v4 起全站仅简体，繁简钮已从六站顶栏退场——R4 只查明暗钮这一枚。
+  // nav 可能由多个片段组成（VitePress 站是 config 菜单 + 组件文件），任一片段含钮即过。
+  if (!files.nav.some(f => f.text.includes(cfg.themeBtnClass))) {
+    problems.push('顶栏里没有 ' + cfg.themeBtnClass + '：明暗钮是六站顶栏的必备件')
   }
   return problems
 })
 
-rule('R5', '繁简钮的文案必须是单字「繁」或「简」', (cfg, files) => {
+rule('R6', '版权与免责页必须在页脚出现', (cfg, files) => {
   const problems = []
-  for (const f of files.nav) {
-    if (!f.text.includes(cfg.langBtnClass)) continue
-    const re = new RegExp('<button[^>]*' + cfg.langBtnClass + '[\\s\\S]{0,400}?</button>', 'g')
-    let m, found = 0
-    while ((m = re.exec(f.text))) {
-      found++
-      const inner = m[0].replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-      const ok = inner === '繁' || inner === '简'
-        || /\{\{[^}]*'繁'[^}]*'简'[^}]*\}\}/.test(inner)
-        || /\{\{[^}]*'简'[^}]*'繁'[^}]*\}\}/.test(inner)
-        || /\{\{[^}]*lang\.(toHans|toHant)[^}]*\}\}/.test(inner)
-      if (!ok) problems.push(f.rel + ' 的繁简钮文案是「' + inner.slice(0, 24) + '」：该是一个字（简体时「繁」，繁体时「简」）')
-    }
-    if (!found) problems.push(f.rel + ' 里找不到 ' + cfg.langBtnClass + ' 这个按钮本体')
-  }
-  return problems
-})
-
-rule('R6', '说明类页面只能在页脚出现', (cfg, files) => {
-  const problems = []
+  // v4 页脚单行化：页脚只挂 /legal 一个说明入口（sources/accuracy 从 legal 页互链）。
   for (const link of cfg.legalLinks) {
     if (!files.footer.some(f => f.text.includes(link))) {
-      problems.push('页脚里没有 ' + link + '：说明类页面在页脚找不到')
+      problems.push('页脚里没有 ' + link + '：版权与免责在页脚找不到')
     }
     for (const f of files.nav.concat(files.sidebar)) {
       if (f.text.includes(link)) problems.push(f.rel + ' 里出现了 ' + link + '：说明类页面只许在页脚出现一次')
@@ -343,7 +315,6 @@ function selftest(dir, cfg, tokensText) {
     '<a href="https://lian.diuci.com/">连词</a><a href="https://zimi.diuci.com/">猜谜</a>',
     '<a href="https://handle.diuci.com/">汉兜</a>',
     '<a href="https://moon.diuci.com/">月冕</a><a href="https://ink.diuci.com/">大作战</a>',
-    '<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>',
     '<button class="dc-theme-btn" type="button" aria-label="切换深色模式"></button>',
     '</nav>',
   ].join('\n')
@@ -391,24 +362,8 @@ function selftest(dir, cfg, tokensText) {
   add('R3', '把正本色抄成字面量 #c8442e', swap(good(), 'css', 'a.css', '.x{color:#c8442e}'))
   add('R3', '把正本半透明色抄成字面量', swap(good(), 'css', 'a.css', '.x{background:rgba(255,253,247,.62)}'))
   add('R4', '顶栏少了明暗钮', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-theme-btn" type="button" aria-label="切换深色模式"></button>', '')))
-  // 这一例要按「本站没豁免」来试：跑 selftest 的站可能自己配了 allowNoLangBtn
-  // （画甲骨就是），拿本站的 config 去试「少了繁简钮」当然抓不住——那是合法的。
-  // 规矩本身得在没豁免的前提下被验到，所以这里显式把豁免摘掉再试。
-  const cfgNoExempt = JSON.parse(JSON.stringify(cfg)); delete cfgNoExempt.allowNoLangBtn; delete cfgNoExempt.allowNoLangBtnReason
-  add('R4', '顶栏少了繁简钮（按未豁免的情形试）', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', '')), () => cfgNoExempt)
-  // 繁简钮豁免的三条坏例子（规范 §3.1）：
-  //  ① 豁免了但没写原因 —— 不许无声豁免
-  //  ② 豁免了繁简钮，顺手把明暗钮也删了 —— 豁免的是繁简那一枚，不是圆钮这件事
-  //  ③ 没豁免却少了繁简钮 —— 老老实实报出来
-  const cfgExemptBad1 = JSON.parse(JSON.stringify(cfg)); cfgExemptBad1.allowNoLangBtn = true; delete cfgExemptBad1.allowNoLangBtnReason
-  add('R4', '繁简钮豁免了却没写原因', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', '')), () => cfgExemptBad1)
-  const cfgExemptOk = JSON.parse(JSON.stringify(cfg)); cfgExemptOk.allowNoLangBtn = true; cfgExemptOk.allowNoLangBtnReason = '本站内容为古文字，无繁简之分'
-  add('R4', '豁免了繁简钮，明暗钮也跟着没了', swap(good(), 'nav', 'nav.html', goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', '').replace('<button class="dc-theme-btn" type="button" aria-label="切换深色模式"></button>', '')), () => cfgExemptOk)
-  add('R5', '繁简钮写了「繁體」两个字', swap(good(), 'nav', 'nav.html', goodNav.replace('>繁</button>', '>繁體</button>')))
-  add('R5', '繁简钮写了「繁简」', swap(good(), 'nav', 'nav.html', goodNav.replace('>繁</button>', '>繁简</button>')))
-  add('R5', '繁简钮的 ternary 写成了两个字', swap(good(), 'nav', 'nav.html', goodNav.replace('>繁</button>', "{{ isHant ? '簡體' : '繁體' }}</button>")))
   add('R6', '侧栏里摆了版权页', swap(good(), 'sidebar', 'sidebar.html', '<aside class="VPSidebar"><a href="/legal">版权与免责</a></aside>'))
-  add('R6', '页脚里没有准确性页', swap(good(), 'footer', 'footer.html', goodFooter.replace('<a href="/accuracy">内容准确性</a>', '')))
+  add('R6', '页脚里没有版权与免责入口', swap(good(), 'footer', 'footer.html', goodFooter.replace('<a href="/legal">版权与免责</a>', '')))
   add('R7', '侧栏给了自己滚动条', swap(good(), 'css', 'a.css', '.VPSidebar{overflow-y:auto}'))
   add('R7', '侧栏给了 max-height（等于给它自己的滚动范围）', swap(good(), 'css', 'a.css', '.VPSidebar{max-height:calc(100vh - 64px)}'))
   add('R8', '八项乐园顺序颠倒', swap(good(), 'nav', 'nav.html', goodNav.replace('学古诗</a>', '学古诗占位</a>').replace('>首页</a>', '>连词</a>').replace('>连词</a><a href="https://handle', '>首页</a><a href="https://handle')))
@@ -457,17 +412,6 @@ function selftest(dir, cfg, tokensText) {
     if (r.id === 'R10') fixture.chromeFiles = realChrome
     const probs = runRule(r.id, cfg, fixture)
     if (probs.length) { tried++; console.error('  好例子被误报：' + r.id + ' ' + r.title + ' → ' + probs[0]) }
-  }
-  // 豁免场景本身也要是好例子：配了 allowNoLangBtn + 原因、顶栏只有明暗钮 —— R4 不该报。
-  // （不这么验，豁免开关就成了一个「什么都放行」的后门。）
-  const cfgExemptGood = JSON.parse(JSON.stringify(cfg))
-  cfgExemptGood.allowNoLangBtn = true
-  cfgExemptGood.allowNoLangBtnReason = '本站内容为古文字，无繁简之分'
-  const exemptFiles = swap(good(), 'nav', 'nav.html',
-    goodNav.replace('<button class="dc-lang-btn" type="button" aria-label="繁简切换" title="繁简切换">繁</button>', ''))
-  for (const rid of ['R4', 'R5']) {
-    const probs = runRule(rid, cfgExemptGood, exemptFiles)
-    if (probs.length) { tried++; console.error('  豁免场景的好例子被误报：' + rid + ' → ' + probs[0]) }
   }
   if (caught !== tried) {
     console.error('[check-ui] --selftest 失败：试了 ' + tried + ' 例，抓住 ' + caught + ' 例')

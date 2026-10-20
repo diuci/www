@@ -1,69 +1,73 @@
 {
-  "tokens": "ui/tokens.css",
-  "tokensSha256": "1dc7fa43afa870c3fde8b52f9e2b90b23d819d37dadde3dc79e1bdb6d5ae1985",
-  "css": [
-    "index.html"
-  ],
-  "nav": [
-    {
-      "file": "index.html",
-      "start": "<nav class=\"dc-nav\">",
-      "end": "</nav>"
-    }
-  ],
-  "footer": [
-    {
-      "file": "index.html",
-      "start": "<footer class=\"dc-foot\">",
-      "end": "</footer>"
-    }
-  ],
-  "sidebar": [],
-  "parkOrder": [
-    {
-      "file": "index.html",
-      "start": "<nav class=\"dc-nav\">",
-      "end": "</nav>"
-    },
-    {
-      "file": "index.html",
-      "start": "<footer class=\"dc-foot\">",
-      "end": "</footer>"
-    }
-  ],
-  "legalLinks": [
-    "/sources",
-    "/accuracy",
-    "/legal"
-  ],
-  "parks": [
-    "首页",
-    "学古诗",
-    "画甲骨",
-    "连词",
-    "猜谜",
-    "汉兜",
-    "月冕",
-    "大作战"
-  ],
-  "langBtnClass": "dc-lang-btn",
-  "themeBtnClass": "dc-theme-btn",
-  "sidebarSelectors": [
-    ".VPSidebar",
-    ".dc-sidebar"
-  ],
-  "tabbarFiles": [
-    "index.html"
-  ],
-  "chrome": {
-    "noBlankLinks": [
-      "index.html"
-    ],
-    "mustContain": [
-      {
-        "file": "index.html",
-        "needle": ["dc-nav-in", "dc-brand-s", "/core/chrome.css", "dc-tabbar"]
-      }
-    ]
-  }
+    "tokens":  "ui/tokens.css",
+    "tokensSha256":  "1dc7fa43afa870c3fde8b52f9e2b90b23d819d37dadde3dc79e1bdb6d5ae1985",
+    "css":  [
+                "index.html"
+            ],
+    "nav":  [
+                {
+                    "file":  "index.html",
+                    "start":  "\u003cnav class=\"dc-nav\"\u003e",
+                    "end":  "\u003c/nav\u003e"
+                }
+            ],
+    "footer":  [
+                   {
+                       "file":  "index.html",
+                       "start":  "\u003cfooter class=\"dc-foot\"\u003e",
+                       "end":  "\u003c/footer\u003e"
+                   }
+               ],
+    "sidebar":  [
+
+                ],
+    "parkOrder":  [
+                      {
+                          "file":  "index.html",
+                          "start":  "\u003cnav class=\"dc-nav\"\u003e",
+                          "end":  "\u003c/nav\u003e"
+                      },
+                      {
+                          "file":  "index.html",
+                          "start":  "\u003cfooter class=\"dc-foot\"\u003e",
+                          "end":  "\u003c/footer\u003e"
+                      }
+                  ],
+    "legalLinks":  [
+                       "/legal"
+                   ],
+    "parks":  [
+                  "首页",
+                  "学古诗",
+                  "画甲骨",
+                  "连词",
+                  "猜谜",
+                  "汉兜",
+                  "月冕",
+                  "大作战"
+              ],
+    "themeBtnClass":  "dc-theme-btn",
+    "sidebarSelectors":  [
+                             ".VPSidebar",
+                             ".dc-sidebar"
+                         ],
+    "tabbarFiles":  [
+                        "index.html"
+                    ],
+    "chrome":  {
+                   "noBlankLinks":  [
+                                        "index.html"
+                                    ],
+                   "mustContain":  [
+                                       {
+                                           "file":  "index.html",
+                                           "needle":  [
+                                                          "dc-nav-in",
+                                                          "dc-brand-s",
+                                                          "/core/chrome.css",
+                                                          "dc-tabbar"
+                                                      ]
+                                       }
+                                   ]
+               }
 }

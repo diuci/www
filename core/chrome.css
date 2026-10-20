@@ -12,7 +12,6 @@
  *     </a>
  *     [站内功能]（lian 视图 tab、handle 工具钮……摆牌子后）
  *     <div class="dc-nav-links">八项乐园（整组靠右，当前站 .on）</div>
- *     [繁简钮 .dc-lang-btn]
  *     <button class="dc-theme-btn">日/月 svg（.i-sun / .i-moon）</button>
  *   </div></nav>
  *
@@ -71,7 +70,7 @@
 /* 当前所在的那一站：朱砂色 + 常驻下划线。分站顶栏同一套标记方式。 */
 .dc-nav-links a.on{color:var(--cinnabar)}
 .dc-nav-links a.on::after{width:100%}
-/* 圆钮：明暗 / 繁简，同尺寸同描边。尺寸吃正本令牌（38px，≤768px 令牌自动降 34px）。 */
+/* 圆钮：明暗钮一枚，尺寸吃正本令牌（38px，≤768px 令牌自动降 34px）。 */
 .dc-theme-btn{
   width:var(--btn-round);height:var(--btn-round);flex:0 0 var(--btn-round);border-radius:50%;cursor:pointer;
   background:var(--surface);border:1px solid var(--line);
@@ -82,13 +81,6 @@
 .dc-theme-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .dc-theme-btn .i-sun{display:block}
 .dc-theme-btn .i-moon{display:none}
-.dc-lang-btn{
-  width:var(--btn-round);height:var(--btn-round);flex:0 0 var(--btn-round);border-radius:50%;cursor:pointer;
-  background:var(--surface);border:1px solid var(--line);color:var(--ink);
-  font-family:var(--round);font-size:15px;display:grid;place-items:center;padding:0;
-  transition:background .25s,border-color .25s,color .25s;
-}
-.dc-lang-btn:hover{color:var(--cinnabar);border-color:var(--cinnabar)}
 /* 暗色日/月互换：data-theme 与 html.dark 两种根标记都兼容（core/theme 两个都挂） */
 :root[data-theme="dark"] .dc-theme-btn .i-sun,
 html.dark .dc-theme-btn .i-sun{display:none}
@@ -104,23 +96,24 @@ html.dark .dc-theme-btn .i-moon{display:block}
   .dc-theme-btn svg{width:17px;height:17px}
 }
 
-/* ── 2. 页脚 ─────────────────────────────────────────────────────────
-   满宽 surface-3 + 1160 内层，与顶栏同一条网格线。 */
+/* ── 2. 页脚（v4：单行精简）──────────────────────────────────────────
+   一行两块：左「牌子 · 必要来源 · 许可」，右「八项乐园 + 联系邮箱」。
+   详细台账只在 legal 页里展开——页脚是路标，不是档案柜。 */
 .dc-foot{
-  border-top:1px solid var(--line);margin-top:34px;padding:38px 0;
+  border-top:1px solid var(--line);margin-top:34px;padding:18px 0;
   background:var(--surface-3);
   transition:background-color .45s ease,border-color .45s ease;
 }
 .dc-foot-in{
   max-width:1160px;margin:0 auto;padding:0 24px;box-sizing:border-box;
-  display:flex;flex-wrap:wrap;gap:16px 30px;align-items:center;justify-content:space-between;
-  font-size:13.4px;color:var(--ink-faint);
+  display:flex;flex-wrap:wrap;gap:8px 28px;align-items:center;justify-content:space-between;
+  font-size:13px;color:var(--ink-faint);
 }
-.dc-foot-l{line-height:1.9}
-.dc-foot-l a{color:var(--cinnabar);text-decoration:none}
-.dc-foot-l a:hover{text-decoration:underline}
-.dc-foot nav{display:flex;flex-wrap:wrap;gap:20px}
-.dc-foot nav a{font-size:13.6px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+.dc-foot-l{line-height:1.7;min-width:0}
+.dc-foot-l a{color:var(--ink-faint);text-decoration:none}
+.dc-foot-l a:hover{color:var(--cinnabar)}
+.dc-foot nav{display:flex;flex-wrap:wrap;gap:4px 16px}
+.dc-foot nav a{font-size:12.8px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
 .dc-foot nav a:hover{color:var(--cinnabar)}
 
 /* ── 3. 底部标签栏（≤768px 出现，桌面隐藏）─────────────────────────────
