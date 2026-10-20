@@ -115,6 +115,15 @@ html.dark .dc-theme-btn .i-moon{display:block}
 .dc-foot nav{display:flex;flex-wrap:wrap;gap:4px 16px}
 .dc-foot nav a{font-size:12.8px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
 .dc-foot nav a:hover{color:var(--cinnabar)}
+/* 窄屏：页脚从「左右两块」收成「上下居中」——类 App 的收尾观感。
+   左块文字长，居中换行比左对齐一坨更整洁；间距与字号同步收紧。 */
+@media (max-width:768px){
+  .dc-foot{padding:14px 0}
+  .dc-foot-in{padding:0 16px;flex-direction:column;align-items:center;gap:10px;text-align:center;font-size:12px}
+  .dc-foot-l{line-height:1.8}
+  .dc-foot nav{justify-content:center;gap:3px 14px}
+  .dc-foot nav a{font-size:12px}
+}
 
 /* ── 3. 底部标签栏（≤768px 出现，桌面隐藏）─────────────────────────────
    58px 高、毛玻璃、圆体 10.5px、朱砂高亮、按下 scale(.9)。
