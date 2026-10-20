@@ -50,6 +50,11 @@ for (const f of CORE_FILES) {
   cfg.core[f] = sha256(buf)
   console.log('[sync-core] ' + f + ' → core/（' + sha256(buf).slice(0, 10) + '…）')
 }
+// entries 是站特有配置（各站自己的入口 html 列表），sync 不得覆盖——重写时沿用
 const cfgPath = path.join(ROOT, 'tools', 'core.config.json')
+if (fs.existsSync(cfgPath)) {
+  const prev = JSON.parse(fs.readFileSync(cfgPath, 'utf8'))
+  if (Array.isArray(prev.entries)) cfg.entries = prev.entries
+}
 fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2) + '\n', 'utf8')
-console.log('[ok] 已写 ' + path.relative(ROOT, cfgPath))
+console.log('[ok] 已写 ' + path.relative(ROOT, cfgPath) + (cfg.entries ? '（entries 沿用 ' + cfg.entries.length + ' 项）' : ''))

@@ -97,6 +97,25 @@ function selftest() {
   return problems
 }
 
+// ---- R4：入口首帧定色脚本 ----
+// 各站 config 的 entries 列出带内联首帧脚本的 html（相对站根）。
+// 不比字节（各站 head 结构不同），钉特征三件套：统一 key + 系统偏好判定 + data-theme。
+// 缺任一件 = 暗色用户闪白屏（规范 §4）。
+function checkEntries(dir, cfg) {
+  const problems = []
+  for (const rel of cfg.entries || []) {
+    const p = path.join(dir, rel)
+    if (!fs.existsSync(p)) { problems.push('entries 指向的文件不存在：' + rel); continue }
+    const html = fs.readFileSync(p, 'utf8')
+    if (!html.includes("'dc-theme'") && !html.includes('"dc-theme"')) {
+      problems.push(rel + ' 首帧脚本没用统一主题 key（dc-theme）——换上 core/theme 的 BOOTSTRAP')
+    }
+    if (!html.includes('matchMedia')) problems.push(rel + ' 首帧脚本丢了系统偏好判定（暗色用户闪白）')
+    if (!html.includes('data-theme')) problems.push(rel + ' 首帧脚本没设 data-theme')
+  }
+  return problems
+}
+
 async function run(dir) {
   const cfg = readCfg(dir)
   const problems = []
@@ -120,12 +139,14 @@ async function run(dir) {
     try { problems.push(...checkTabbar(JSON.parse(fs.readFileSync(tb, 'utf8')))) }
     catch (e) { problems.push('tabbar.json 解析失败：' + e.message) }
   }
+  // R4
+  problems.push(...checkEntries(dir, cfg))
   if (problems.length) {
     for (const p of problems) console.error('[check-core] ' + p)
     console.error('[check-core] 失败：' + problems.length + ' 处')
     return 1
   }
-  console.log('[ok] check-core 通：四件拷贝与正本字节一致，自检全过，tabbar 八站齐')
+  console.log('[ok] check-core 通：四件拷贝与正本字节一致，自检全过，tabbar 八站齐，入口首帧定色齐')
   return 0
 }
 
