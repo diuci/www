@@ -64,18 +64,20 @@ async function runStoreSelftest(dir) {
   }
 }
 
-// ---- R3：tabbar 结构 ----
-// 规范八站：顺序 + 域名 + 简体名（与 check-ui R8 八项乐园同源同序）
-const WANT_TABS = [
+// ---- R3：tabbar / parks 结构 ----
+// 顶栏乐园八站（parks.json，与 check-ui R8 同源同序）；
+// 底栏 v4.1 起 6 站——月冕/大作战是全屏游戏，只从顶部菜单进，不占拇指栏。
+const WANT_PARKS = [
   ['diuci.com', '首页'], ['k12.diuci.com', '学古诗'], ['jiagu.diuci.com', '画甲骨'],
   ['lian.diuci.com', '连词'], ['zimi.diuci.com', '猜谜'], ['handle.diuci.com', '汉兜'],
   ['moon.diuci.com', '月冕'], ['ink.diuci.com', '大作战'],
 ]
+const WANT_TABS = WANT_PARKS.slice(0, 6)
 
 function checkTabbar(tabbar) {
   const problems = []
   const tabs = tabbar.tabs || []
-  if (tabs.length !== WANT_TABS.length) problems.push('tabs 是 ' + tabs.length + ' 站，规范八站')
+  if (tabs.length !== WANT_TABS.length) problems.push('tabs 是 ' + tabs.length + ' 站，规范六站（v4.1：月冕/大作战只在顶部菜单）')
   tabs.forEach((t, i) => {
     const [host, label] = WANT_TABS[i] || ['', '']
     if (!t.href || !t.href.includes(host)) problems.push('第 ' + (i + 1) + ' 项应是 ' + host + '，实得 ' + t.href)
@@ -88,14 +90,13 @@ function checkTabbar(tabbar) {
   return problems
 }
 
-// 顶栏乐园数据（parks.json）与底栏同源同序——顶栏是各站 DOM 的数据来源，
-// 这里不查它，顶栏顺序就只剩「各站自觉」。v3 起顶底两份一起钉。
+// 顶栏乐园数据（parks.json）：八项乐园的数据来源，与底栏同源不同形。
 function checkParks(parks) {
   const problems = []
   const list = parks.parks || []
-  if (list.length !== WANT_TABS.length) problems.push('parks 是 ' + list.length + ' 站，规范八站')
+  if (list.length !== WANT_PARKS.length) problems.push('parks 是 ' + list.length + ' 站，规范八站')
   list.forEach((p, i) => {
-    const [host, label] = WANT_TABS[i] || ['', '']
+    const [host, label] = WANT_PARKS[i] || ['', '']
     if (!p.href || !p.href.includes(host)) problems.push('parks 第 ' + (i + 1) + ' 项应是 ' + host + '，实得 ' + p.href)
     if (p.label !== label) problems.push('parks 第 ' + (i + 1) + ' 项 label 应为「' + label + '」，实得「' + p.label + '」')
     if (!p.key || !p.key.startsWith('parks.')) problems.push('parks 第 ' + (i + 1) + ' 项缺词典 key（parks.*，繁体渲染走它）')
@@ -107,19 +108,21 @@ function selftest() {
   const problems = []
   // 坏例：R3 的三条毒
   const bad1 = checkTabbar({ tabs: [{ href: 'https://x/', key: 'tabbar.x', label: '首页', paths: ['M0 0'] }] })
-  if (!bad1.length) problems.push('坏例：八站缺七站没被抓')
+  if (!bad1.length) problems.push('坏例：六站缺五站没被抓')
   const bad2 = checkTabbar({
     tabs: WANT_TABS.map((h, i) => ({ href: 'https://' + h[0] + '/', key: 'tabbar.' + i, label: h[1], paths: ['M0 0'] }))
       .map((t, i) => (i === 2 ? { ...t, label: '甲骨猜字' } : t)),
   })
   if (!bad2.length) problems.push('坏例：旧站名（甲骨猜字）没被抓')
+  const bad2b = checkTabbar({ tabs: WANT_PARKS.map(([host, label], i) => ({ href: 'https://' + host + '/', key: 'tabbar.' + i, label, paths: ['M0 0'] })) })
+  if (!bad2b.length) problems.push('坏例：底栏摆满八站（月冕/大作战回流）没被抓')
   const good = checkTabbar(JSON.parse(fs.readFileSync(path.join(HERE, '..', 'core', 'tabbar.json'), 'utf8')))
   if (good.length) problems.push('好例被误报：' + good[0])
   // parks.json：坏例（label 串位）+ 好例
   const badPark = checkParks({ parks: [{ href: 'https://diuci.com/', label: '首页' }] })
   if (!badPark.length) problems.push('坏例：parks 一站缺七站没被抓')
   const badPark2 = checkParks({
-    parks: WANT_TABS.map(([host, label], i) => ({ href: 'https://' + host + '/', label, key: 'parks.' + i }))
+    parks: WANT_PARKS.map(([host, label], i) => ({ href: 'https://' + host + '/', label, key: 'parks.' + i }))
       .map((p, i) => (i === 1 ? { ...p, label: '古诗文' } : p)),
   })
   if (!badPark2.length) problems.push('坏例：parks 旧站名（古诗文）没被抓')
@@ -182,7 +185,7 @@ async function run(dir) {
     console.error('[check-core] 失败：' + problems.length + ' 处')
     return 1
   }
-  console.log('[ok] check-core 通：六件拷贝与正本字节一致，自检全过，tabbar 八站齐，入口首帧定色齐')
+  console.log('[ok] check-core 通：六件拷贝与正本字节一致，自检全过，底栏六站齐（月冕/大作战只在顶部菜单），入口首帧定色齐')
   return 0
 }
 

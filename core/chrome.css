@@ -10,9 +10,11 @@
  *       <span class="dc-seal">站字</span>
  *       <span class="dc-brand-tx"><span class="dc-brand-t">站名</span><span class="dc-brand-s">DIUCI</span></span>
  *     </a>
- *     [站内功能]（lian 视图 tab、handle 工具钮……摆牌子后）
- *     <div class="dc-nav-links">八项乐园（整组靠右，当前站 .on）</div>
- *     <button class="dc-theme-btn">日/月 svg（.i-sun / .i-moon）</button>
+ *   [站内功能]（lian 视图 tab、handle 工具钮……摆牌子后）
+ *   <div class="dc-nav-links">八项乐园（整组靠右，当前站 .on）</div>
+ *   <button class="dc-menu-btn" aria-expanded="false" aria-label="全部乐园">（≤768px 显示）</button>
+ *   <button class="dc-theme-btn">日/月 svg（.i-sun / .i-moon）</button>
+ *   <nav class="dc-menu" hidden>八站面板（≤768px；含月冕/大作战——底栏不摆它们）</nav>
  *   </div></nav>
  *
  * 页脚 DOM 契约：
@@ -86,6 +88,65 @@
 html.dark .dc-theme-btn .i-sun{display:none}
 :root[data-theme="dark"] .dc-theme-btn .i-moon,
 html.dark .dc-theme-btn .i-moon{display:block}
+
+/* 菜单钮 + 面板（v4.1）：小屏（≤768px）顶栏右侧一枚圆钮，点开滑出全部八站。
+   桌面 dc-nav-links 八项齐整，菜单钮/面板不出现——同一份 DOM，CSS 分场合。
+   契约：<button class="dc-menu-btn" aria-expanded="false" aria-label="全部乐园">
+   <svg class="i-bars">三横</svg><svg class="i-x">✕</svg></button>
+   <nav class="dc-menu" hidden><a>×8（当前站 .on）</a></nav>
+   两者都放在 .dc-nav 内（dc-nav-in 之后）；开关 JS 各站三行，行为契约：
+   点钮开合、点外/Escape 收起。月冕/大作战只从这里进（底栏不摆，全屏游戏不占拇指栏）。 */
+.dc-menu-btn,.dc-menu{display:none}
+.dc-menu-btn .i-x{display:none}
+.dc-menu-btn[aria-expanded="true"] .i-bars{display:none}
+.dc-menu-btn[aria-expanded="true"] .i-x{display:block}
+@media (max-width:768px){
+  .dc-menu-btn{
+    display:grid;place-items:center;
+    width:var(--btn-round-sm);height:var(--btn-round-sm);flex:0 0 var(--btn-round-sm);
+    border-radius:50%;cursor:pointer;padding:0;
+    background:var(--surface);border:1px solid var(--line);color:var(--ink);
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .25s,border-color .25s,color .25s;
+  }
+  .dc-menu-btn:hover{border-color:var(--cinnabar)}
+  .dc-menu-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+  .dc-menu{
+    display:block;position:fixed;left:0;right:0;top:56px;z-index:65;
+    background:var(--nav-bg);
+    backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border-bottom:1px solid var(--line);
+    box-shadow:0 14px 30px -18px rgba(36,31,26,.4);
+    padding:6px 12px calc(10px + env(safe-area-inset-top,0px));
+  }
+  .dc-menu[hidden]{display:none}
+  .dc-menu-in{
+    max-width:520px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:2px 6px;
+  }
+  .dc-menu a{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 12px;border-radius:10px;
+    font-family:var(--round);font-size:15px;letter-spacing:.04em;
+    color:var(--ink-soft);text-decoration:none;
+    -webkit-tap-highlight-color:transparent;transition:background .2s,color .2s;
+  }
+  .dc-menu a:active{background:var(--surface);transform:scale(.985)}
+  .dc-menu a::before{
+    content:'';width:6px;height:6px;border-radius:50%;
+    background:var(--line);flex:0 0 6px;transition:background .2s;
+  }
+  .dc-menu a.on{color:var(--cinnabar)}
+  .dc-menu a.on::before{background:var(--cinnabar)}
+  @media (prefers-reduced-motion:no-preference){
+    .dc-menu{animation:dc-menu-in .26s cubic-bezier(.2,.7,.3,1) both}
+  }
+}
+@keyframes dc-menu-in{
+  from{opacity:0;transform:translateY(-8px)}
+  to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .dc-menu{animation:none}
+}
 /* 窄屏：App 标题栏化，56px、贴边 16px；乐园让位给底部标签栏 */
 @media (max-width:768px){
   .dc-nav-links{display:none}

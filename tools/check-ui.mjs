@@ -10,7 +10,8 @@
     R6 说明类页面（数据来源 / 准确性 / 版权免责）只能在页脚出现
     R7 侧栏不得有自己的滚动条
     R8 八项乐园的名字与顺序，顶栏与页脚必须一致
-    R9 底部标签栏：七子站齐、顺序对、无旧名
+ R9 底部标签栏：六项齐、顺序对、无旧名（v4.1 起 6 项，月冕/大作战只在顶部菜单）
+ R11 顶部菜单契约：菜单钮 + 八站面板（含月冕/大作战）
     R10 chrome 契约（v3）：六站互链禁新窗口；chrome 单源特征在位；旧形禁回流
 
   规矩：闸门自己也要被试。--selftest 当场数坏例子，一个没抓到就退出。
@@ -198,11 +199,14 @@ rule('R8', '八项乐园的名字与顺序必须一致', (cfg, files) => {
   const problems = []
   const seenKeys = new Set()
   for (const { rel, text } of files.parks) {
+    // v4.1：顶部菜单面板里也有八站链接——先把 dc-menu 块剥掉再抽序列，
+    // 否则「乐园排 + 菜单面板」两轮八站会在顺序检查里自己打自己。
+    const bare = text.replace(/<nav[^>]*dc-menu[^>]*>[\s\S]*?<\/nav>/g, '')
     const seq = []
     // 两种写法都要认：HTML 里的 <a>学古诗</a>，和 VitePress 配置里的 { text: '学古诗', link: … }
     const re = /<a\b[^>]*>([^<]{1,40})<\/a>|text:\s*'([^']{1,12})'/g
     let m
-    while ((m = re.exec(text))) {
+    while ((m = re.exec(bare))) {
       let label = (m[1] || m[2] || '').trim()
       // 乐园名写在词典里的（{{ t('parks.home') }}）：先按 config 的对照表换成简体，再比顺序
       const key = label.match(/\{\{\s*t\('([^']+)'\)\s*\}\}/)
@@ -236,26 +240,71 @@ rule('R8', '八项乐园的名字与顺序必须一致', (cfg, files) => {
   return problems
 })
 
-rule('R9', '底部标签栏：七子站齐、顺序对、无旧名', (cfg, files) => {
+rule('R9', '底部标签栏：六项齐、顺序对、无旧名', (cfg, files) => {
   const problems = []
-  // 七个子站按八项乐园顺序（首页 href='/' 不含域名，主站不查它）；
+  // 五个子站按八项乐园顺序（首页 href='/' 不含域名，主站不查它）；
+  // v4.1 起底栏只有六项——月冕/大作战是全屏游戏，只从顶部菜单进（R11 查它们在菜单里）。
   // 旧名是历史包袱：连句/月光/对战/甲骨猜字 在任何 tabbar 文件里都不许再出现。
-  const HOSTS = ['k12.diuci.com/', 'jiagu.diuci.com/', 'lian.diuci.com/', 'zimi.diuci.com/', 'handle.diuci.com/', 'moon.diuci.com/', 'ink.diuci.com/']
+  const HOSTS = ['k12.diuci.com/', 'jiagu.diuci.com/', 'lian.diuci.com/', 'zimi.diuci.com/', 'handle.diuci.com/']
   const OLD = ['连句', '月光', '对战', '甲骨猜字']
+  // v4.1：这两站只在顶部菜单（R11），底栏出现即回流
+  const GONE = ['moon.diuci.com/', 'ink.diuci.com/']
   for (const { rel, text } of files.tabbar) {
+    // v4.1：菜单面板也在 nav 文件里、也含 moon/ink 链接——只圈 tabbar 块本身来查。
+    // 数据驱动的组件（TABS 数组在 script 里）块内没有字面量域名——那种回退全文。
+    const m = text.match(/<nav[^>]*dc-tabbar[^>]*>[\s\S]*?<\/nav>/)
+    const tb = (m && HOSTS.some(h => m[0].includes(h))) ? m[0] : text
+    for (const g of GONE) {
+      if (tb.includes(g)) problems.push(rel + ' 底栏出现了 ' + g + '（v4.1：月冕/大作战只在顶部菜单，底栏六项）')
+    }
     let pos = -1
     for (const h of HOSTS) {
-      const i = text.indexOf(h, pos + 1)
+      const i = tb.indexOf(h, pos + 1)
       if (i < 0) { problems.push(rel + ' 缺 ' + h + ' 或顺序不对'); break }
       pos = i
     }
     // 「床前明月光」是诗原文——先剥掉再查旧名，别让李白替旧口径背锅
-    const stripped = text.replace(/明月光/g, '')
+    const stripped = tb.replace(/明月光/g, '')
     for (const o of OLD) {
       if (stripped.includes(o)) problems.push(rel + ' 出现旧站名「' + o + '」——数据口径以 core/tabbar.json 为准')
     }
   }
   return problems
+})
+
+// R11：顶部菜单契约（PLAN-移动端导航 v4.1）。
+//   小屏（≤768px）顶栏右侧一枚 dc-menu-btn，点开 dc-menu 面板——八站全在、顺序同乐园。
+//   月冕/大作战是全屏游戏，底栏不摆（R9 只查六项），这个面板是它们唯一的移动端入口，
+//   缺了 = 手机用户永远进不了这两站。some 语义：多 region 的站只要有一处带齐就算过
+//   （VitePress 的菜单块 region 不含按钮——R4 的教训：逐 region 循环必误报）。
+rule('R11', '顶部菜单契约：菜单钮 + 八站面板在位（含月冕/大作战，顺序对）', (cfg, files) => {
+  const problems = []
+  const LABELS = ['首页', '学古诗', '画甲骨', '连词', '猜谜', '汉兜', '月冕', '大作战']
+  const inOrder = (text) => {
+    let pos = -1
+    for (const l of LABELS) {
+      const i = text.indexOf(l, pos + 1)
+      if (i < 0) return false
+      pos = i
+    }
+    return true
+  }
+  const withBtn = files.nav.filter(f => f.text.includes('dc-menu-btn'))
+  if (!withBtn.length) return ['nav 区没有任何文件带 dc-menu-btn（v4.1 顶部菜单契约）']
+  const errs = []
+  for (const { rel, text } of withBtn) {
+    const m = text.match(/<nav[^>]*dc-menu[^>]*>[\s\S]*?<\/nav>/)
+    if (!m) { errs.push(rel + ' 有菜单钮但没有 <nav class="dc-menu"> 面板'); continue }
+    // 数据驱动的面板（v-for + {{ label }}）块内没有字面量站名——那种拿全文（MENU 数组在 script 里）验；
+    // 字面量面板只验面板本身（全文里乐园排是正序，拿全文验会把乱序面板放过去）。
+    // v-for 渲染的站（jiagu/lian 的 TopNav/App）根本没有字面量站名——顺序由 core/parks.json
+    // 单源保证（check-core R3 钉八站有序），面板带 v-for 就算合规。
+    const panelHasLabel = LABELS.some(l => m[0].includes(l))
+    const dataDriven = /v-for/.test(m[0]) || /v-for/.test(text)
+    if (panelHasLabel ? inOrder(m[0]) : (dataDriven || inOrder(text))) return problems
+    errs.push(rel + ' 菜单面板缺站或顺序不对（应为 ' + LABELS.join('/') + '）')
+  }
+  return errs.length ? errs : ['nav 区找不到合规的菜单面板']
 })
 
 // R10：chrome 契约（PLAN-全站统一-v3）。
@@ -308,14 +357,25 @@ function runRule(id, cfg, files) {
 function ruleCount() { return RULES.length }
 
 function selftest(dir, cfg, tokensText) {
+  // v4.1：菜单面板夹具——八站顺序、顺序可换，坏例从这里造
+  const MENU_HREF = { '首页': 'https://diuci.com/', '学古诗': 'https://k12.diuci.com/', '画甲骨': 'https://jiagu.diuci.com/', '连词': 'https://lian.diuci.com/', '猜谜': 'https://zimi.diuci.com/', '汉兜': 'https://handle.diuci.com/', '月冕': 'https://moon.diuci.com/', '大作战': 'https://ink.diuci.com/' }
+  const menuPanel = (labels) =>
+    '<nav class="dc-menu" hidden><div class="dc-menu-in">' +
+    labels.map(l => '<a href="' + MENU_HREF[l] + '">' + l + '</a>').join('') +
+    '</div></nav>'
+  const PARK8 = ['首页', '学古诗', '画甲骨', '连词', '猜谜', '汉兜', '月冕', '大作战']
+  const navLinks =
+    '<a href="https://diuci.com/">首页</a><a href="https://k12.diuci.com/">学古诗</a>' +
+    '<a href="https://jiagu.diuci.com/">画甲骨</a>' +
+    '<a href="https://lian.diuci.com/">连词</a><a href="https://zimi.diuci.com/">猜谜</a>' +
+    '<a href="https://handle.diuci.com/">汉兜</a>' +
+    '<a href="https://moon.diuci.com/">月冕</a><a href="https://ink.diuci.com/">大作战</a>'
   const goodNav = [
     '<nav class="dc-nav">',
-    '<a href="https://diuci.com/">首页</a><a href="https://k12.diuci.com/">学古诗</a>',
-    '<a href="https://jiagu.diuci.com/">画甲骨</a>',
-    '<a href="https://lian.diuci.com/">连词</a><a href="https://zimi.diuci.com/">猜谜</a>',
-    '<a href="https://handle.diuci.com/">汉兜</a>',
-    '<a href="https://moon.diuci.com/">月冕</a><a href="https://ink.diuci.com/">大作战</a>',
+    navLinks,
+    '<button class="dc-menu-btn" type="button" aria-expanded="false" aria-label="全部乐园"></button>',
     '<button class="dc-theme-btn" type="button" aria-label="切换深色模式"></button>',
+    menuPanel(PARK8),
     '</nav>',
   ].join('\n')
   const goodFooter = [
@@ -330,8 +390,8 @@ function selftest(dir, cfg, tokensText) {
   ].join('\n')
   const goodSidebar = '<aside class="VPSidebar"><a href="/poems/">总览</a><a href="/gaokao">高考默写</a></aside>'
   const goodCss = '.x{color:var(--cinnabar);width:var(--btn-round)}'
-  // R9 的好文本：七子站按八项乐园顺序出现
-  const goodTabbar = ['学古诗 k12.diuci.com/', '画甲骨 jiagu.diuci.com/', '连词 lian.diuci.com/', '猜谜 zimi.diuci.com/', '汉兜 handle.diuci.com/', '月冕 moon.diuci.com/', '大作战 ink.diuci.com/'].join('\n')
+  // R9 的好文本：五个子站按乐园顺序（v4.1 底栏六项，首页 href='/' 不含域名不查）
+  const goodTabbar = ['学古诗 k12.diuci.com/', '画甲骨 jiagu.diuci.com/', '连词 lian.diuci.com/', '猜谜 zimi.diuci.com/', '汉兜 handle.diuci.com/'].join('\n')
   const good = () => ({
     css: [{ rel: 'a.css', text: goodCss }],
     nav: [{ rel: 'nav.html', text: goodNav }],
@@ -376,7 +436,12 @@ function selftest(dir, cfg, tokensText) {
   // R9 坏例：旧站名 / 缺子站 / 顺序颠倒
   add('R9', 'tabbar 出现旧站名「连句」', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.replace('连词 lian.diuci.com/', '连句 lian.diuci.com/') }] })
   add('R9', 'tabbar 缺 jiagu 与 zimi', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.split('\n').filter(l => !l.includes('jiagu') && !l.includes('zimi')).join('\n') }] })
-  add('R9', 'tabbar 顺序颠倒', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.replace('画甲骨 jiagu.diuci.com/\n', '').replace('大作战 ink.diuci.com/', '画甲骨 jiagu.diuci.com/\n大作战 ink.diuci.com/') }] })
+  add('R9', 'tabbar 顺序颠倒', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.replace('画甲骨 jiagu.diuci.com/\n', '').replace('汉兜 handle.diuci.com/', '画甲骨 jiagu.diuci.com/\n汉兜 handle.diuci.com/') }] })
+  add('R9', '底栏摆回月冕（v4.1 只许在顶部菜单）', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar + '\n月冕 moon.diuci.com/' }] })
+  // R11 坏例：菜单钮缺席 / 面板缺月冕与大作战 / 面板顺序不对
+  add('R11', '顶栏没有菜单钮', swap(good(), 'nav', 'nav.html', goodNav.replace(/<button class="dc-menu-btn"[\s\S]*?<\/button>\n/, '')))
+  add('R11', '菜单面板缺月冕与大作战', swap(good(), 'nav', 'nav.html', goodNav.replace(menuPanel(PARK8), menuPanel(PARK8.slice(0, 6)))))
+  add('R11', '菜单面板顺序颠倒', swap(good(), 'nav', 'nav.html', goodNav.replace(menuPanel(PARK8), menuPanel(['猜谜', '汉兜', '月冕', '大作战', '首页', '学古诗', '画甲骨', '连词']))))
   // R10 坏例：新窗口回流 / 特征缺失 / 旧形回流 / config 指空文件
   add('R10', '互链带了 target="_blank"', { ...good(), chromeFiles: { 'nav.vue': '<a href="https://k12.diuci.com/" target="_blank">学古诗</a>' } }, () => ({ ...cfg, chrome: { noBlankLinks: ['nav.vue'] } }))
   add('R10', '顶栏缺 dc-nav-in 特征', { ...good(), chromeFiles: { 'nav.vue': '<nav class="dc-nav"></nav>' } }, () => ({ ...cfg, chrome: { mustContain: [{ file: 'nav.vue', needle: 'dc-nav-in' }] } }))

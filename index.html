@@ -396,6 +396,14 @@ h2{font-family:var(--round);font-size:clamp(29px,3.7vw,43px);line-height:1.28;ma
       <a href="https://moon.diuci.com/">月冕</a>
       <a href="https://ink.diuci.com/">大作战</a>
     </div>
+    <button class="dc-menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-label="全部乐园" title="全部乐园">
+      <svg class="i-bars" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6.8h16M4 12h16M4 17.2h16"/>
+      </svg>
+      <svg class="i-x" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18"/>
+      </svg>
+    </button>
     <button class="dc-theme-btn" id="themeBtn" type="button" aria-label="切换深色模式" title="切换深色模式">
       <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="4.2"/>
@@ -405,6 +413,18 @@ h2{font-family:var(--round);font-size:clamp(29px,3.7vw,43px);line-height:1.28;ma
         <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z"/>
       </svg>
     </button>
+    <nav class="dc-menu" id="dcMenu" hidden aria-label="全部乐园">
+      <div class="dc-menu-in">
+        <a href="/" class="on" aria-current="page">首页</a>
+        <a href="https://k12.diuci.com/">学古诗</a>
+        <a href="https://jiagu.diuci.com/">画甲骨</a>
+        <a href="https://lian.diuci.com/">连词</a>
+        <a href="https://zimi.diuci.com/">猜谜</a>
+        <a href="https://handle.diuci.com/">汉兜</a>
+        <a href="https://moon.diuci.com/">月冕</a>
+        <a href="https://ink.diuci.com/">大作战</a>
+      </div>
+    </nav>
   </div>
 </nav>
 
@@ -665,25 +685,25 @@ h2{font-family:var(--round);font-size:clamp(29px,3.7vw,43px);line-height:1.28;ma
     </svg>
     <span class="tx">汉兜</span>
   </a>
-  <a class="dc-tab" href="https://moon.diuci.com/">
-    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z"/>
-      <path d="M17.6 3.2 16.8 5M20.8 6.4 18.6 6.9M14.6 2.4l.5 1.8"/>
-    </svg>
-    <span class="tx">月冕</span>
-  </a>
-  <a class="dc-tab" href="https://ink.diuci.com/">
-    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M14.2 3.6H20a.4.4 0 0 1 .4.4v5.8"/>
-      <path d="M20.4 3.6 11.2 12.8a2 2 0 0 0-.5 1l-.8 3.4a.5.5 0 0 0 .6.6l3.4-.8a2 2 0 0 0 1-.5l9.2-9.2"/>
-      <path d="M15.6 8.4 5.2 18.8a2 2 0 0 1-1 .5l-2 .6a.5.5 0 0 1-.6-.6l.6-2a2 2 0 0 1 .5-1L13 5.6"/>
-    </svg>
-    <span class="tx">大作战</span>
-  </a>
   </nav>
 
 <script>
 (function(){
+  // ── 顶部菜单（v4.1）：小屏点开全部八站；点钮/点外/Escape 收起 ──
+  var menuBtn=document.getElementById('menuBtn');
+  var menu=document.getElementById('dcMenu');
+  function closeMenu(){ if(menu&&!menu.hidden){ menu.hidden=true; menuBtn.setAttribute('aria-expanded','false'); } }
+  if(menuBtn&&menu){
+    menuBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      var open=menu.hidden;
+      menu.hidden=!open;
+      menuBtn.setAttribute('aria-expanded',open?'true':'false');
+    });
+    document.addEventListener('click',function(e){ if(!menu.contains(e.target)) closeMenu(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMenu(); });
+  }
+
   // ── 明暗切换 ──
   var root=document.documentElement;
   var btn=document.getElementById('themeBtn');
