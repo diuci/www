@@ -1,0 +1,176 @@
+/* core/chrome.css —— 全站 chrome 单源（PLAN-全站统一-v3 §二）。
+ *
+ * 顶栏 / 页脚 / 底部标签栏 / 站间切换手感的唯一来源。
+ * 六站经 tools/sync-core.mjs 分发，check-core R1 钉 sha256——改这里，sync 后全站生效。
+ * 值基准 = 主站 diuci.com 现行实现（A 族：1160 网格 / 66px 栏高 / 40px 印章）。
+ *
+ * 顶栏 DOM 契约（六站一致，站内功能可插在牌子之后）：
+ *   <nav class="dc-nav"><div class="dc-nav-in">
+ *     <a class="dc-brand" href="本站根">
+ *       <span class="dc-seal">站字</span>
+ *       <span class="dc-brand-tx"><span class="dc-brand-t">站名</span><span class="dc-brand-s">DIUCI</span></span>
+ *     </a>
+ *     [站内功能]（lian 视图 tab、handle 工具钮……摆牌子后）
+ *     <div class="dc-nav-links">八项乐园（整组靠右，当前站 .on）</div>
+ *     [繁简钮 .dc-lang-btn]
+ *     <button class="dc-theme-btn">日/月 svg（.i-sun / .i-moon）</button>
+ *   </div></nav>
+ *
+ * 页脚 DOM 契约：
+ *   <footer class="dc-foot"><div class="dc-foot-in">
+ *     <div class="dc-foot-l">牌子 / 来源 / 许可</div>
+ *     <nav>八项乐园 + 说明页 + 邮箱</nav>
+ *   </div></footer>
+ *
+ * k12 与 zimi 谜书（VitePress）用覆盖层把 VPNavBar 调到同一组值（见各自
+ * custom.css），不引入本文件；本文件值一改，须同步复核那两处覆盖层。
+ */
+
+/* ── 1. 顶栏 ─────────────────────────────────────────────────────────
+   满宽的条 + 1160 网格的内层两层结构：背景与毛玻璃铺满视口，
+   内容落在 1160 网格、左右 24px——六站同一排链接的位置由此对齐。 */
+.dc-nav{
+  position:sticky;top:0;z-index:60;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:var(--nav-bg);
+  border-bottom:1px solid var(--line);
+  transition:background-color .45s ease,border-color .45s ease;
+}
+.dc-nav-in{
+  display:flex;align-items:center;gap:28px;height:66px;
+  max-width:1160px;margin:0 auto;padding:0 24px;box-sizing:border-box;
+}
+/* 牌子：印章 + 两行站名。印章用圆体、渐变、-4° 倾角，与主站 .seal 同一枚。 */
+.dc-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);flex:none}
+.dc-seal{
+  width:40px;height:40px;flex:0 0 40px;border-radius:9px;
+  background:linear-gradient(155deg,var(--cinnabar),var(--cinnabar-deep));
+  color:var(--on-accent);display:grid;place-items:center;
+  font-family:var(--round);font-size:23px;line-height:1;
+  box-shadow:0 3px 10px -2px rgba(200,68,46,.5);
+  transform:rotate(-4deg);
+}
+.dc-brand-tx{display:block;min-width:0}
+.dc-brand-t{display:block;font-family:var(--round);font-size:21px;letter-spacing:.04em;line-height:1.25;white-space:nowrap}
+.dc-brand-s{display:block;font-family:var(--round);font-size:10px;color:var(--ink-faint);letter-spacing:.24em;margin-top:1px}
+/* 乐园那一排：衬线 14.5px、26px 间距、悬停朱砂 + 下划线展开，整组靠右。
+   min-width:0 + 横向滚动兜底：乐园铺不下时滑动，不许溢出顶栏。 */
+.dc-nav-links{display:flex;gap:26px;margin-left:auto;min-width:0;overflow-x:auto;scrollbar-width:none;padding:0}
+.dc-nav-links::-webkit-scrollbar{display:none}
+.dc-nav-links a{
+  color:var(--ink-soft);text-decoration:none;font-size:14.5px;
+  position:relative;padding:4px 0;transition:color .22s;white-space:nowrap;
+}
+.dc-nav-links a::after{
+  content:'';position:absolute;left:0;bottom:0;width:0;height:2px;
+  background:var(--cinnabar);transition:width .28s cubic-bezier(.4,0,.2,1);
+}
+.dc-nav-links a:hover{color:var(--cinnabar)}
+.dc-nav-links a:hover::after{width:100%}
+/* 当前所在的那一站：朱砂色 + 常驻下划线。分站顶栏同一套标记方式。 */
+.dc-nav-links a.on{color:var(--cinnabar)}
+.dc-nav-links a.on::after{width:100%}
+/* 圆钮：明暗 / 繁简，同尺寸同描边。尺寸吃正本令牌（38px，≤768px 令牌自动降 34px）。 */
+.dc-theme-btn{
+  width:var(--btn-round);height:var(--btn-round);flex:0 0 var(--btn-round);border-radius:50%;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);display:grid;place-items:center;padding:0;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .25s,border-color .25s,color .25s;
+}
+.dc-theme-btn:hover{transform:rotate(18deg) scale(1.08);border-color:var(--cinnabar)}
+.dc-theme-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.dc-theme-btn .i-sun{display:block}
+.dc-theme-btn .i-moon{display:none}
+.dc-lang-btn{
+  width:var(--btn-round);height:var(--btn-round);flex:0 0 var(--btn-round);border-radius:50%;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink);
+  font-family:var(--round);font-size:15px;display:grid;place-items:center;padding:0;
+  transition:background .25s,border-color .25s,color .25s;
+}
+.dc-lang-btn:hover{color:var(--cinnabar);border-color:var(--cinnabar)}
+/* 暗色日/月互换：data-theme 与 html.dark 两种根标记都兼容（core/theme 两个都挂） */
+:root[data-theme="dark"] .dc-theme-btn .i-sun,
+html.dark .dc-theme-btn .i-sun{display:none}
+:root[data-theme="dark"] .dc-theme-btn .i-moon,
+html.dark .dc-theme-btn .i-moon{display:block}
+/* 窄屏：App 标题栏化，56px、贴边 16px；乐园让位给底部标签栏 */
+@media (max-width:768px){
+  .dc-nav-links{display:none}
+  .dc-nav-in{height:56px;padding:0 16px;gap:12px}
+  .dc-seal{width:34px;height:34px;flex:0 0 34px;font-size:20px;border-radius:8px}
+  .dc-brand-t{font-size:18px}
+  .dc-brand-s{font-size:9px;letter-spacing:.2em}
+  .dc-theme-btn svg{width:17px;height:17px}
+}
+
+/* ── 2. 页脚 ─────────────────────────────────────────────────────────
+   满宽 surface-3 + 1160 内层，与顶栏同一条网格线。 */
+.dc-foot{
+  border-top:1px solid var(--line);margin-top:34px;padding:38px 0;
+  background:var(--surface-3);
+  transition:background-color .45s ease,border-color .45s ease;
+}
+.dc-foot-in{
+  max-width:1160px;margin:0 auto;padding:0 24px;box-sizing:border-box;
+  display:flex;flex-wrap:wrap;gap:16px 30px;align-items:center;justify-content:space-between;
+  font-size:13.4px;color:var(--ink-faint);
+}
+.dc-foot-l{line-height:1.9}
+.dc-foot-l a{color:var(--cinnabar);text-decoration:none}
+.dc-foot-l a:hover{text-decoration:underline}
+.dc-foot nav{display:flex;flex-wrap:wrap;gap:20px}
+.dc-foot nav a{font-size:13.6px;color:var(--ink-soft);text-decoration:none;transition:color .2s}
+.dc-foot nav a:hover{color:var(--cinnabar)}
+
+/* ── 3. 底部标签栏（≤768px 出现，桌面隐藏）─────────────────────────────
+   58px 高、毛玻璃、圆体 10.5px、朱砂高亮、按下 scale(.9)。
+   注意 top:auto——满宽 fixed 元素会被顶栏的 sticky top:0 拉到页面顶部。 */
+.dc-tabbar{display:none}
+@media (max-width:768px){
+  .dc-tabbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:70;
+    height:calc(58px + env(safe-area-inset-bottom,0px));
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    background:var(--nav-bg);
+    backdrop-filter:blur(18px) saturate(1.4);
+    -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border-top:1px solid var(--line);
+    box-shadow:0 -2px 18px -8px rgba(36,31,26,.28);
+  }
+  .dc-tab{
+    flex:1 1 0;min-width:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    text-decoration:none;color:var(--ink-faint);
+    transition:color .2s,transform .12s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .dc-tab:active{transform:scale(.9)}
+  .dc-tab .ic{
+    width:22px;height:22px;fill:none;stroke:currentColor;
+    stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+  }
+  .dc-tab .tx{
+    font-family:var(--round);font-size:10.5px;letter-spacing:.06em;line-height:1;
+  }
+  .dc-tab.on{color:var(--cinnabar)}
+  .dc-tab.on .ic{stroke-width:2}
+  /* 标签栏会盖住内容，尾部留出等高空白 */
+  body{padding-bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+}
+
+/* ── 4. 站间切换手感 ────────────────────────────────────────────────
+   跨站顶底栏逐像素一致 → 跳转后顶底不动、只有内容区换，这就是「站内切换」的观感。
+   同站导航走 View Transitions（Chrome 126+；跨子域导航 API 不生效，属预期，
+   跨站那一跳由内容进场动画补一次「页面已换」的实感）。 */
+@view-transition{navigation:auto}
+@media (prefers-reduced-motion:no-preference){
+  .dc-page-in{animation:dc-page-in .38s cubic-bezier(.2,.7,.3,1) both}
+}
+@keyframes dc-page-in{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .dc-page-in{animation:none}
+  .dc-tab:active{transform:none}
+}

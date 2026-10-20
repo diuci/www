@@ -19,7 +19,7 @@ const ROOT = path.resolve(HERE, '..')
 const DEPLOY = process.env.DEPLOY_ROOT || path.resolve(ROOT, '..', '_deploy')
 const SRC = path.join(DEPLOY, 'core')
 const DST = path.join(ROOT, 'core')
-const CORE_FILES = ['daily.mjs', 'theme.mjs', 'store.mjs', 'tabbar.json', 'parks.json']
+const CORE_FILES = ['daily.mjs', 'theme.mjs', 'store.mjs', 'tabbar.json', 'parks.json', 'chrome.css']
 
 function sha256(buf) {
   return crypto.createHash('sha256').update(buf).digest('hex')

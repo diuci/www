@@ -5,7 +5,7 @@
 // 本闸门在各站跑，钉三件事：
 //   R1 拷贝与正本 sha256 一致（daily/theme/store/tabbar 四件逐件钉）
 //   R2 core 自检全过（daily 确定性/冻结、theme 片段、store 响应式——正本带的坏例自检）
-//   R3 tabbar.json 结构完整（八站、顺序、href 域名、key/label/paths 齐全）
+//   R3 tabbar.json / parks.json 结构完整（八站、顺序、href 域名、key/label/paths 齐全）
 //
 // 各站 config：core.config.json { "core": { "<文件名>": "<sha256>" } }，
 // 由 tools/sync-core.mjs 写出——sync 与检查用同一份钉值，不会打自己。
@@ -18,7 +18,7 @@ import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const CORE_FILES = ['daily.mjs', 'theme.mjs', 'store.mjs', 'tabbar.json', 'parks.json']
+const CORE_FILES = ['daily.mjs', 'theme.mjs', 'store.mjs', 'tabbar.json', 'parks.json', 'chrome.css']
 
 function fail(msg) {
   console.error('[check-core] ' + msg)
@@ -88,6 +88,21 @@ function checkTabbar(tabbar) {
   return problems
 }
 
+// 顶栏乐园数据（parks.json）与底栏同源同序——顶栏是各站 DOM 的数据来源，
+// 这里不查它，顶栏顺序就只剩「各站自觉」。v3 起顶底两份一起钉。
+function checkParks(parks) {
+  const problems = []
+  const list = parks.parks || []
+  if (list.length !== WANT_TABS.length) problems.push('parks 是 ' + list.length + ' 站，规范八站')
+  list.forEach((p, i) => {
+    const [host, label] = WANT_TABS[i] || ['', '']
+    if (!p.href || !p.href.includes(host)) problems.push('parks 第 ' + (i + 1) + ' 项应是 ' + host + '，实得 ' + p.href)
+    if (p.label !== label) problems.push('parks 第 ' + (i + 1) + ' 项 label 应为「' + label + '」，实得「' + p.label + '」')
+    if (!p.key || !p.key.startsWith('parks.')) problems.push('parks 第 ' + (i + 1) + ' 项缺词典 key（parks.*，繁体渲染走它）')
+  })
+  return problems
+}
+
 function selftest() {
   const problems = []
   // 坏例：R3 的三条毒
@@ -100,6 +115,16 @@ function selftest() {
   if (!bad2.length) problems.push('坏例：旧站名（甲骨猜字）没被抓')
   const good = checkTabbar(JSON.parse(fs.readFileSync(path.join(HERE, '..', 'core', 'tabbar.json'), 'utf8')))
   if (good.length) problems.push('好例被误报：' + good[0])
+  // parks.json：坏例（label 串位）+ 好例
+  const badPark = checkParks({ parks: [{ href: 'https://diuci.com/', label: '首页' }] })
+  if (!badPark.length) problems.push('坏例：parks 一站缺七站没被抓')
+  const badPark2 = checkParks({
+    parks: WANT_TABS.map(([host, label], i) => ({ href: 'https://' + host + '/', label, key: 'parks.' + i }))
+      .map((p, i) => (i === 1 ? { ...p, label: '古诗文' } : p)),
+  })
+  if (!badPark2.length) problems.push('坏例：parks 旧站名（古诗文）没被抓')
+  const goodPark = checkParks(JSON.parse(fs.readFileSync(path.join(HERE, '..', 'core', 'parks.json'), 'utf8')))
+  if (goodPark.length) problems.push('parks 好例被误报：' + goodPark[0])
   return problems
 }
 
@@ -145,6 +170,11 @@ async function run(dir) {
     try { problems.push(...checkTabbar(JSON.parse(fs.readFileSync(tb, 'utf8')))) }
     catch (e) { problems.push('tabbar.json 解析失败：' + e.message) }
   }
+  const pk = path.join(dir, 'core', 'parks.json')
+  if (fs.existsSync(pk)) {
+    try { problems.push(...checkParks(JSON.parse(fs.readFileSync(pk, 'utf8')))) }
+    catch (e) { problems.push('parks.json 解析失败：' + e.message) }
+  }
   // R4
   problems.push(...checkEntries(dir, cfg))
   if (problems.length) {
@@ -152,7 +182,7 @@ async function run(dir) {
     console.error('[check-core] 失败：' + problems.length + ' 处')
     return 1
   }
-  console.log('[ok] check-core 通：四件拷贝与正本字节一致，自检全过，tabbar 八站齐，入口首帧定色齐')
+  console.log('[ok] check-core 通：六件拷贝与正本字节一致，自检全过，tabbar 八站齐，入口首帧定色齐')
   return 0
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  四站共用的 UI 闸门。正本在 diuci/www 仓 tools/check-ui.mjs，其余三站是字节一样的副本。
+  六站共用的 UI 闸门。正本在 _deploy 仓 tools/check-ui.mjs，其余站是字节一样的副本。
 
   它盯的事（每一条在 --selftest 里都有坏例子）：
     R1 令牌副本必须与正本字节一致（sha256 钉在 config 里）
@@ -11,6 +11,8 @@
     R6 说明类页面（数据来源 / 准确性 / 版权免责）只能在页脚出现
     R7 侧栏不得有自己的滚动条
     R8 八项乐园的名字与顺序，顶栏与页脚必须一致
+    R9 底部标签栏：七子站齐、顺序对、无旧名
+    R10 chrome 契约（v3）：六站互链禁新窗口；chrome 单源特征在位；旧形禁回流
 
   规矩：闸门自己也要被试。--selftest 当场数坏例子，一个没抓到就退出。
 */
@@ -284,6 +286,47 @@ rule('R9', '底部标签栏：七子站齐、顺序对、无旧名', (cfg, files
   return problems
 })
 
+// R10：chrome 契约（PLAN-全站统一-v3）。
+//   noBlankLinks —— 这些文件里「站内链接」不得 target="_blank"：六站互链一律当前页跳转，
+//                   新开窗口 = 打断「站内切换」的手感。站内 = href 以 / 开头或含 diuci.com；
+//                   GitHub 等真外链保留新窗口，不受此管。
+//   mustContain —— chrome 单源的特征针：顶栏 dc-nav-in / 品牌副标 dc-brand-s /
+//                   chrome.css 引用 / TabBar 接入……缺一条 = 本站又自绘了一套 chrome。
+//   forbid —— 旧形状禁回流（如 B 族 30px 印章）：改值请改 core/chrome.css。
+// needle 可以是字符串或字符串数组；三段都从 config 读，正本不写死任何站的文件名。
+rule('R10', 'chrome 契约：互链禁新窗口、单源特征在位、旧形不回流', (cfg, files) => {
+  const problems = []
+  const ch = cfg.chrome || {}
+  const cf = files.chromeFiles || {}
+  const isInternal = (href) => /^\/(?!\/)/.test(href || '') || /diuci\.com/.test(href || '')
+  for (const rel of ch.noBlankLinks || []) {
+    const text = cf[rel]
+    if (text == null) { problems.push('chrome.noBlankLinks 指向不存在的文件：' + rel); continue }
+    const tagRe = /<a\b[^>]*>/gi
+    let m
+    while ((m = tagRe.exec(text))) {
+      if (!/target\s*=\s*["']?_blank/i.test(m[0])) continue
+      const href = (m[0].match(/href\s*=\s*["']([^"']*)["']/i) || [])[1] || ''
+      if (isInternal(href)) problems.push(rel + ' 里站内链接（' + href.slice(0, 40) + '）带了 target="_blank"：六站互链一律当前页跳转（v3 站内切换手感）')
+    }
+  }
+  for (const item of ch.mustContain || []) {
+    const text = cf[item.file]
+    if (text == null) { problems.push('chrome.mustContain 指向不存在的文件：' + item.file); continue }
+    for (const n of [].concat(item.needle)) {
+      if (!text.includes(n)) problems.push(item.file + ' 里找不到「' + n + '」：chrome 单源特征缺失')
+    }
+  }
+  for (const item of ch.forbid || []) {
+    const text = cf[item.file]
+    if (text == null) { problems.push('chrome.forbid 指向不存在的文件：' + item.file); continue }
+    for (const n of [].concat(item.needle)) {
+      if (text.includes(n)) problems.push(item.file + ' 里出现了「' + n + '」：' + (item.why || '旧形状禁回流，改 core/chrome.css'))
+    }
+  }
+  return problems
+})
+
 function runRule(id, cfg, files) {
   const r = RULES.find(x => x.id === id)
   if (!r) fail('没有 ' + id + ' 这条规则')
@@ -379,6 +422,11 @@ function selftest(dir, cfg, tokensText) {
   add('R9', 'tabbar 出现旧站名「连句」', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.replace('连词 lian.diuci.com/', '连句 lian.diuci.com/') }] })
   add('R9', 'tabbar 缺 jiagu 与 zimi', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.split('\n').filter(l => !l.includes('jiagu') && !l.includes('zimi')).join('\n') }] })
   add('R9', 'tabbar 顺序颠倒', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.replace('画甲骨 jiagu.diuci.com/\n', '').replace('大作战 ink.diuci.com/', '画甲骨 jiagu.diuci.com/\n大作战 ink.diuci.com/') }] })
+  // R10 坏例：新窗口回流 / 特征缺失 / 旧形回流 / config 指空文件
+  add('R10', '互链带了 target="_blank"', { ...good(), chromeFiles: { 'nav.vue': '<a href="https://k12.diuci.com/" target="_blank">学古诗</a>' } }, () => ({ ...cfg, chrome: { noBlankLinks: ['nav.vue'] } }))
+  add('R10', '顶栏缺 dc-nav-in 特征', { ...good(), chromeFiles: { 'nav.vue': '<nav class="dc-nav"></nav>' } }, () => ({ ...cfg, chrome: { mustContain: [{ file: 'nav.vue', needle: 'dc-nav-in' }] } }))
+  add('R10', '旧 B 族印章 30px 回流', { ...good(), chromeFiles: { 'nav.vue': '.dc-seal{width:30px}' } }, () => ({ ...cfg, chrome: { forbid: [{ file: 'nav.vue', needle: 'width:30px', why: '印章尺寸以 chrome.css 为准' }] } }))
+  add('R10', 'chrome.mustContain 指向不存在的文件', good(), () => ({ ...cfg, chrome: { mustContain: [{ file: 'nope.vue', needle: 'x' }] } }))
 
   let tried = 0, caught = 0
   for (const c of cases) {
@@ -388,9 +436,26 @@ function selftest(dir, cfg, tokensText) {
     if (probs.length) caught++
     else console.error('  坏例子没抓住：' + c.id + ' ' + c.why)
   }
-  // 好例子必须一条都不报，否则闸门是在瞎叫
+  // R10 豁免口径也要被试到：GitHub 外链带 _blank 是合法的，不许报
+  const extProbs = runRule('R10', { ...cfg, chrome: { noBlankLinks: ['ext.vue'] } },
+    { ...good(), chromeFiles: { 'ext.vue': '<a href="https://github.com/diuci/x" target="_blank">GitHub</a>' } })
+  if (extProbs.length) { tried++; console.error('  好例子被误报：R10 外链 _blank 不该报 → ' + extProbs[0]) }
+  // 好例子必须一条都不报，否则闸门是在瞎叫。
+  // R10 读的是磁盘上的 chrome 契约文件（不走 good() 夹具）——好例跑真实文件；
+  // 本站真的缺特征时这里会如实报出来，那正是闸门该叫的时候。
+  const chCfg = cfg.chrome || {}
+  const chromeRels = new Set(chCfg.noBlankLinks || [])
+  for (const x of chCfg.mustContain || []) chromeRels.add(x.file)
+  for (const x of chCfg.forbid || []) chromeRels.add(x.file)
+  const realChrome = {}
+  for (const rel of chromeRels) {
+    const p = path.join(dir, rel)
+    realChrome[rel] = fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null
+  }
   for (const r of RULES) {
-    const probs = runRule(r.id, cfg, good())
+    const fixture = good()
+    if (r.id === 'R10') fixture.chromeFiles = realChrome
+    const probs = runRule(r.id, cfg, fixture)
     if (probs.length) { tried++; console.error('  好例子被误报：' + r.id + ' ' + r.title + ' → ' + probs[0]) }
   }
   // 豁免场景本身也要是好例子：配了 allowNoLangBtn + 原因、顶栏只有明暗钮 —— R4 不该报。
@@ -434,6 +499,18 @@ const files = {
     return { rel, text: fs.readFileSync(p, 'utf8') }
   }),
   __ctx: { dir, tokensText },
+}
+// R10 的 chrome 契约文件：按 config 收集，缺文件记 null（规则里报「指向不存在」）
+{
+  const ch = cfg.chrome || {}
+  const rels = new Set(ch.noBlankLinks || [])
+  for (const x of ch.mustContain || []) rels.add(x.file)
+  for (const x of ch.forbid || []) rels.add(x.file)
+  files.chromeFiles = {}
+  for (const rel of rels) {
+    const p = path.join(dir, rel)
+    files.chromeFiles[rel] = fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null
+  }
 }
 let total = 0
 for (const r of RULES) {

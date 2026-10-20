@@ -1,13 +1,13 @@
 {
-  "_comment": "八项乐园顶栏数据正本（PLAN-全站统一-v2 追加：站间切换单源）。顺序固定；label 是顶栏全名；当前站由使用方按 hostname 判定。底栏（tabbar.json）与顶栏（parks.json）同源不同形。",
+  "_comment": "八项乐园顶栏数据正本（PLAN-全站统一-v2 追加：站间切换单源；v3 加词典 key 供 lian 繁体渲染）。顺序固定；label 是简体全名；当前站由使用方按 hostname 判定；key 指向各站词典的 parks.* 条目（不用 i18n 的站可忽略 key 只用 label）。底栏（tabbar.json）与顶栏（parks.json）同源不同形。",
   "parks": [
-    { "href": "https://diuci.com/", "label": "首页" },
-    { "href": "https://k12.diuci.com/", "label": "学古诗" },
-    { "href": "https://jiagu.diuci.com/", "label": "画甲骨" },
-    { "href": "https://lian.diuci.com/", "label": "连词" },
-    { "href": "https://zimi.diuci.com/", "label": "猜谜" },
-    { "href": "https://handle.diuci.com/", "label": "汉兜" },
-    { "href": "https://moon.diuci.com/", "label": "月冕" },
-    { "href": "https://ink.diuci.com/", "label": "大作战" }
+    { "href": "https://diuci.com/", "label": "首页", "key": "parks.home" },
+    { "href": "https://k12.diuci.com/", "label": "学古诗", "key": "parks.k12" },
+    { "href": "https://jiagu.diuci.com/", "label": "画甲骨", "key": "parks.jiagu" },
+    { "href": "https://lian.diuci.com/", "label": "连词", "key": "parks.lian" },
+    { "href": "https://zimi.diuci.com/", "label": "猜谜", "key": "parks.zimi" },
+    { "href": "https://handle.diuci.com/", "label": "汉兜", "key": "parks.handle" },
+    { "href": "https://moon.diuci.com/", "label": "月冕", "key": "parks.moon" },
+    { "href": "https://ink.diuci.com/", "label": "大作战", "key": "parks.ink" }
   ]
 }

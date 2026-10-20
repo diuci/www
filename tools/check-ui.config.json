@@ -7,14 +7,14 @@
   "nav": [
     {
       "file": "index.html",
-      "start": "<nav>",
+      "start": "<nav class=\"dc-nav\">",
       "end": "</nav>"
     }
   ],
   "footer": [
     {
       "file": "index.html",
-      "start": "<footer>",
+      "start": "<footer class=\"dc-foot\">",
       "end": "</footer>"
     }
   ],
@@ -22,12 +22,12 @@
   "parkOrder": [
     {
       "file": "index.html",
-      "start": "<nav>",
+      "start": "<nav class=\"dc-nav\">",
       "end": "</nav>"
     },
     {
       "file": "index.html",
-      "start": "<footer>",
+      "start": "<footer class=\"dc-foot\">",
       "end": "</footer>"
     }
   ],
@@ -54,5 +54,16 @@
   ],
   "tabbarFiles": [
     "index.html"
-  ]
+  ],
+  "chrome": {
+    "noBlankLinks": [
+      "index.html"
+    ],
+    "mustContain": [
+      {
+        "file": "index.html",
+        "needle": ["dc-nav-in", "dc-brand-s", "/core/chrome.css", "dc-tabbar"]
+      }
+    ]
+  }
 }
