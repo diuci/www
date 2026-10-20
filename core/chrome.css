@@ -59,6 +59,7 @@
 .dc-nav-links::-webkit-scrollbar{display:none}
 .dc-nav-links a{
   color:var(--ink-soft);text-decoration:none;font-size:14.5px;
+  font-family:var(--serif); /* 显式钉衬线：body 是圆体的站（画甲骨/猜谜）不钉就会继承成圆体，六站两族 */
   position:relative;padding:4px 0;transition:color .22s;white-space:nowrap;
 }
 .dc-nav-links a::after{
