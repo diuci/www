@@ -30,6 +30,12 @@
 /* ── 1. 顶栏 ─────────────────────────────────────────────────────────
    满宽的条 + 1160 网格的内层两层结构：背景与毛玻璃铺满视口，
    内容落在 1160 网格、左右 24px——六站同一排链接的位置由此对齐。 */
+/* --dc-nav-h：顶栏总高（66px 栏 + 1px 边框；窄屏 56+1）。
+   全屏弹层（汉兜的规则/设置 sheet）拿它做 padding-top，内容不再被顶栏拦腰盖住。 */
+:root{--dc-nav-h:67px}
+@media (max-width:768px){
+  :root{--dc-nav-h:57px}
+}
 .dc-nav{
   position:sticky;top:0;z-index:60;
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
