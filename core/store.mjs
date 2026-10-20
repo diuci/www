@@ -31,11 +31,11 @@ export function selftest() {
   state.choices.push('丁')
   if (state.answered !== true) problems.push('reactive state 写入不生效')
   if (state.choices.length !== 3 + 1) problems.push('reactive 数组写入不生效')
-  // readonly 视图必须同步可见（同一代理链），且写不进去
+  // readonly 视图必须同步可见（同一代理链），且写不进去——
+  // Vue 的 readonly 写入是 dev 警告 + 静默失败（不抛异常），所以断言「值不变」
   if (store.answered !== true) problems.push('readonly 视图没同步到写入')
-  let threw = false
-  try { store.answered = false } catch { threw = true }
-  if (!threw) problems.push('readonly 视图竟然可写（防手抖失效）')
+  try { store.answered = false } catch { /* node 下可能不警告，无所谓 */ }
+  if (store.answered !== true) problems.push('readonly 视图竟然可写（防手抖失效）')
   // raw 必须是活状态（同一 target）：写入可见，且可 JSON 序列化保数组性
   if (raw.answered !== true) problems.push('raw 不是活状态')
   if (raw.choices.length !== 4) problems.push('raw 数组不同步')

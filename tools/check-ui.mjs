@@ -262,6 +262,28 @@ rule('R8', '八项乐园的名字与顺序必须一致', (cfg, files) => {
   return problems
 })
 
+rule('R9', '底部标签栏：七子站齐、顺序对、无旧名', (cfg, files) => {
+  const problems = []
+  // 七个子站按八项乐园顺序（首页 href='/' 不含域名，主站不查它）；
+  // 旧名是历史包袱：连句/月光/对战/甲骨猜字 在任何 tabbar 文件里都不许再出现。
+  const HOSTS = ['k12.diuci.com/', 'jiagu.diuci.com/', 'lian.diuci.com/', 'zimi.diuci.com/', 'handle.diuci.com/', 'moon.diuci.com/', 'ink.diuci.com/']
+  const OLD = ['连句', '月光', '对战', '甲骨猜字']
+  for (const { rel, text } of files.tabbar) {
+    let pos = -1
+    for (const h of HOSTS) {
+      const i = text.indexOf(h, pos + 1)
+      if (i < 0) { problems.push(rel + ' 缺 ' + h + ' 或顺序不对'); break }
+      pos = i
+    }
+    // 「床前明月光」是诗原文——先剥掉再查旧名，别让李白替旧口径背锅
+    const stripped = text.replace(/明月光/g, '')
+    for (const o of OLD) {
+      if (stripped.includes(o)) problems.push(rel + ' 出现旧站名「' + o + '」——数据口径以 core/tabbar.json 为准')
+    }
+  }
+  return problems
+})
+
 function runRule(id, cfg, files) {
   const r = RULES.find(x => x.id === id)
   if (!r) fail('没有 ' + id + ' 这条规则')
@@ -294,12 +316,15 @@ function selftest(dir, cfg, tokensText) {
   ].join('\n')
   const goodSidebar = '<aside class="VPSidebar"><a href="/poems/">总览</a><a href="/gaokao">高考默写</a></aside>'
   const goodCss = '.x{color:var(--cinnabar);width:var(--btn-round)}'
+  // R9 的好文本：七子站按八项乐园顺序出现
+  const goodTabbar = ['学古诗 k12.diuci.com/', '画甲骨 jiagu.diuci.com/', '连词 lian.diuci.com/', '猜谜 zimi.diuci.com/', '汉兜 handle.diuci.com/', '月冕 moon.diuci.com/', '大作战 ink.diuci.com/'].join('\n')
   const good = () => ({
     css: [{ rel: 'a.css', text: goodCss }],
     nav: [{ rel: 'nav.html', text: goodNav }],
     footer: [{ rel: 'footer.html', text: goodFooter }],
     sidebar: [{ rel: 'sidebar.html', text: goodSidebar }],
     parks: [{ rel: 'nav.html', text: goodNav }, { rel: 'footer.html', text: goodFooter }],
+    tabbar: [{ rel: 'tabbar.txt', text: goodTabbar }],
     __ctx: { dir, tokensText },
   })
   const swap = (files, key, rel, text) => {
@@ -350,6 +375,10 @@ function selftest(dir, cfg, tokensText) {
   const dictNav = '<nav class="dc-nav">' + ['parks.home', 'parks.k12', 'parks.jiagu', 'parks.lian', 'parks.zimi', 'parks.handle', 'parks.moon', 'parks.ink'].map(k => '<a href="https://x/">{{ t(' + Q + k + Q + ') }}</a>').join('') + '</nav>'
   const cfgBad3 = JSON.parse(JSON.stringify(cfg)); cfgBad3.localeLabels = { 'parks.home': '首页', 'parks.k12': '学古诗', 'parks.jiagu': '画甲骨', 'parks.lian': '连词', 'parks.zimi': '猜谜', 'parks.handle': '汉兜', 'parks.moon': '月冕', 'parks.ink': '大作战', 'parks.gone': '首页' }
   add('R8', '乐园词典对照表里留着一个页面里找不到的键', { ...good(), parks: [{ rel: 'nav.html', text: dictNav }] }, () => cfgBad3)
+  // R9 坏例：旧站名 / 缺子站 / 顺序颠倒
+  add('R9', 'tabbar 出现旧站名「连句」', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.replace('连词 lian.diuci.com/', '连句 lian.diuci.com/') }] })
+  add('R9', 'tabbar 缺 jiagu 与 zimi', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.split('\n').filter(l => !l.includes('jiagu') && !l.includes('zimi')).join('\n') }] })
+  add('R9', 'tabbar 顺序颠倒', { ...good(), tabbar: [{ rel: 'tabbar.txt', text: goodTabbar.replace('画甲骨 jiagu.diuci.com/\n', '').replace('大作战 ink.diuci.com/', '画甲骨 jiagu.diuci.com/\n大作战 ink.diuci.com/') }] })
 
   let tried = 0, caught = 0
   for (const c of cases) {
@@ -399,6 +428,11 @@ const files = {
   footer: readRegions(dir, cfg.footer),
   sidebar: readRegions(dir, cfg.sidebar || []),
   parks: readRegions(dir, cfg.parkOrder),
+  tabbar: (cfg.tabbarFiles || []).map((rel) => {
+    const p = path.join(dir, rel)
+    if (!fs.existsSync(p)) fail('config 的 tabbarFiles 指向不存在的文件：' + rel)
+    return { rel, text: fs.readFileSync(p, 'utf8') }
+  }),
   __ctx: { dir, tokensText },
 }
 let total = 0

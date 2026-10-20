@@ -13,9 +13,11 @@
 export const THEME_KEY = 'dc-theme'
 export const THEME_COLORS = { dark: '#17140f', light: '#f4ede0' }
 
-/** 首帧内联脚本：构建时插进 index.html（<head> 里、样式表之前）。 */
+/** 首帧内联脚本：构建时插进 index.html（<head> 里、样式表之前）。
+ *  含 MutationObserver：任何代码切主题（改 data-theme）都同步地址栏色。 */
 export const THEME_BOOTSTRAP = `;(function () {
   var t = document.documentElement
+  var m = document.querySelector('meta[name="theme-color"]')
   var saved = null
   try { saved = localStorage.getItem('${THEME_KEY}') } catch (e) {}
   var mode = saved === 'dark' || saved === 'light'
@@ -24,8 +26,9 @@ export const THEME_BOOTSTRAP = `;(function () {
   t.setAttribute('data-theme', mode)
   t.classList.toggle('dark', mode === 'dark')
   t.classList.toggle('light', mode === 'light')
-  var m = document.querySelector('meta[name="theme-color"]')
-  if (m) m.setAttribute('content', mode === 'dark' ? '${THEME_COLORS.dark}' : '${THEME_COLORS.light}')
+  var sync = function () { if (m) m.setAttribute('content', t.getAttribute('data-theme') === 'dark' ? '${THEME_COLORS.dark}' : '${THEME_COLORS.light}') }
+  sync()
+  if (m && window.MutationObserver) new MutationObserver(sync).observe(t, { attributes: true, attributeFilter: ['data-theme'] })
 })();`
 
 function apply(mode) {

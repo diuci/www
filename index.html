@@ -1,10 +1,10 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>丢词夺理 · 学古诗，也玩古诗</title>
-<meta name="description" content="课标 207 篇 + 教材拓展 46 篇，共 253 篇古诗文。阅读、对战游戏、探索故事，给孩子的中文古诗词乐园。">
+<meta name="description" content="课标 207 篇 + 教材拓展 46 篇，共 253 篇古诗文。阅读、游戏、探索故事，给孩子的中文古诗词乐园。">
 <meta name="theme-color" content="#f4ede0" id="metaTheme">
 <script>
 /* 在首次绘制前定色，避免暗色用户看到白色闪屏 */
@@ -269,7 +269,7 @@ h2{font-family:var(--round);font-size:clamp(29px,3.7vw,43px);line-height:1.28;ma
 .i-d{background:linear-gradient(150deg,#77a494,var(--celadon))}
 /* 汉兜的印章就是朱砂，与顶栏 .seal 同一支渐变；不另发明一个新色 */
 .i-e{background:linear-gradient(155deg,var(--cinnabar),var(--cinnabar-deep))}
-/* 连句：青瓷往深一档走，和「内容开源」那格浅青瓷拉开，不另发明一个新色 */
+/* 连词：青瓷往深一档走，和「内容开源」那格浅青瓷拉开，不另发明一个新色 */
 .e-f::after{background:radial-gradient(circle,rgba(95,141,125,.18),transparent 70%)}
 .i-f{background:linear-gradient(155deg,#4f7a68,var(--celadon))}
 /* 六张卡正好排满三行双列，不再需要「最后一张通栏」那条补丁 */
@@ -593,7 +593,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
           <div class="entry-ico i-b">涂</div>
           <h3>丢词大作战</h3>
           <p>4v4 汉字涂地射击。用古诗词占点，把好词好句铺满全场，涂得多的那队赢。</p>
-          <div><span class="tag">3D 对战</span><span class="tag">联句题</span><span class="tag">四人联机</span></div>
+          <div><span class="tag">3D 赛场</span><span class="tag">联句题</span><span class="tag">四人联机</span></div>
           <span class="entry-go">进入游戏 →</span>
         </a>
         <a class="entry e-e rv" href="https://handle.diuci.com/" style="transition-delay:.08s">
@@ -608,14 +608,14 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
           <h3>连词成句</h3>
           <p>每天一段必背课文。在字块里连出相邻的字找回每一句，再把找齐的句子排回原文顺序——最后那一步靠的是记不记得课文。</p>
           <div><span class="tag">每日课文</span><span class="tag">245 篇</span><span class="tag">连字 + 排序</span></div>
-          <span class="entry-go">开始连句 →</span>
+          <span class="entry-go">开始连词 →</span>
         </a>
         <a class="entry e-c rv" href="https://moon.diuci.com/" style="transition-delay:.24s">
           <div class="entry-ico i-c">月</div>
           <h3>遗失月冕</h3>
           <p>月亮丢了一枚冕。顺着光影走，把碎片一段段捡回来，边走边读里面的句子。</p>
           <div><span class="tag">探索</span><span class="tag">叙事</span></div>
-          <span class="entry-go">走进月光 →</span>
+          <span class="entry-go">走进月冕 →</span>
         </a>
         <a class="entry e-d rv" href="https://github.com/diuci/k12-chinese-poetry" style="transition-delay:.32s">
           <div class="entry-ico i-d">源</div>
@@ -754,6 +754,14 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
     </svg>
     <span class="tx">学古诗</span>
   </a>
+  <a class="dc-tab" href="https://jiagu.diuci.com/">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6.2 4.6h11.6a1.6 1.6 0 0 1 1.6 1.6v11.6a1.6 1.6 0 0 1-1.6 1.6H6.2a1.6 1.6 0 0 1-1.6-1.6V6.2a1.6 1.6 0 0 1 1.6-1.6z"/>
+      <path d="M12 8.4v7.2"/>
+      <path d="M9.6 12h4.8"/>
+    </svg>
+    <span class="tx">画甲骨</span>
+  </a>
   <a class="dc-tab" href="https://lian.diuci.com/">
     <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="5.4" cy="6.6" r="2.3"/>
@@ -761,7 +769,16 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       <circle cx="18.6" cy="17.4" r="2.3"/>
       <path d="M7.1 8.3l3.5 2.4M13.4 13.3l3.5 2.4"/>
     </svg>
-    <span class="tx">连句</span>
+    <span class="tx">连词</span>
+  </a>
+  <a class="dc-tab" href="https://zimi.diuci.com/">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4.2 5.4h15.6"/>
+      <path d="M7.2 5.4v13.2M16.8 5.4v13.2"/>
+      <path d="M9.4 18.6h5.2"/>
+      <path d="M9.8 9.6a2.4 2.4 0 1 1 3.3 2.2c-.7.35-1.1.95-1.1 1.7v.5"/>
+    </svg>
+    <span class="tx">猜谜</span>
   </a>
   <a class="dc-tab" href="https://handle.diuci.com/">
     <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
@@ -777,7 +794,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z"/>
       <path d="M17.6 3.2 16.8 5M20.8 6.4 18.6 6.9M14.6 2.4l.5 1.8"/>
     </svg>
-    <span class="tx">月光</span>
+    <span class="tx">月冕</span>
   </a>
   <a class="dc-tab" href="https://ink.diuci.com/">
     <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
@@ -785,7 +802,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:34px;backgroun
       <path d="M20.4 3.6 11.2 12.8a2 2 0 0 0-.5 1l-.8 3.4a.5.5 0 0 0 .6.6l3.4-.8a2 2 0 0 0 1-.5l9.2-9.2"/>
       <path d="M15.6 8.4 5.2 18.8a2 2 0 0 1-1 .5l-2 .6a.5.5 0 0 1-.6-.6l.6-2a2 2 0 0 1 .5-1L13 5.6"/>
     </svg>
-    <span class="tx">对战</span>
+    <span class="tx">大作战</span>
   </a>
   </nav>
 
