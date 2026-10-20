@@ -148,6 +148,9 @@ jobs:
       - name: 核对线上内容与仓库一致
         run: |
           set -euo pipefail
+          # 线上锚点与仓库侧略有不同：Cloudflare 会把邮箱改写成
+          # /cdn-cgi/l/email-protection#...（防爬），线上页面永远不含
+          # 字面量 hi@diuci.com——线上侧改钉 aria-label「八个乐园」。
           anchors=(
             '<title>丢词夺理 · 学古诗，也玩古诗</title>'
             '丢词夺理'
@@ -162,7 +165,7 @@ jobs:
             'https://lian.diuci.com/'
             'https://github.com/diuci/k12-chinese-poetry'
             '原文公有领域'
-            'hi@diuci.com'
+            '八个乐园'
             'https://k12.diuci.com/legal'
             '六 个 乐 园'
           )
