@@ -44,8 +44,12 @@ if (process.argv.includes('--check')) {
 
 fs.mkdirSync(DST, { recursive: true })
 const cfg = { core: {} }
+// 写拷贝与算哈希都用归一后的 LF 字节：Windows 工作区可能是 CRLF，git 入库按
+// .gitattributes 归一成 LF——不归一的话本地钉的是 CRLF 哈希，CI checkout 出
+// LF 版，R1 必红（zimi 首次 CI 实抓）。
+const norm = (buf) => Buffer.from(buf.toString('utf8').replace(/\r\n/g, '\n'), 'utf8')
 for (const f of CORE_FILES) {
-  const buf = fs.readFileSync(path.join(SRC, f))
+  const buf = norm(fs.readFileSync(path.join(SRC, f)))
   fs.writeFileSync(path.join(DST, f), buf)
   cfg.core[f] = sha256(buf)
   console.log('[sync-core] ' + f + ' → core/（' + sha256(buf).slice(0, 10) + '…）')

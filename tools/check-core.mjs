@@ -29,6 +29,12 @@ function sha256(buf) {
   return crypto.createHash('sha256').update(buf).digest('hex')
 }
 
+// 哈希前归一 LF：工作区行尾无关紧要，入库字节（.gitattributes 归一成 LF）才是
+// 唯一事实——否则 Windows 本地绿、CI 红（zimi 首次 CI 实抓）。
+function sha256Norm(p) {
+  return sha256(Buffer.from(fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n'), 'utf8'))
+}
+
 function readCfg(dir) {
   const p = path.join(dir, 'tools', 'core.config.json')
   if (!fs.existsSync(p)) fail('没有 tools/core.config.json：先跑 node tools/sync-core.mjs')
@@ -123,7 +129,7 @@ async function run(dir) {
   for (const f of CORE_FILES) {
     const p = path.join(dir, 'core', f)
     if (!fs.existsSync(p)) { problems.push('缺 core/' + f + '：sync 没跑？'); continue }
-    const got = sha256(fs.readFileSync(p))
+    const got = sha256Norm(p)
     const want = (cfg.core || {})[f]
     if (!want) { problems.push(f + ' 没钉 sha256（config 是 sync 写的，别手改）'); continue }
     if (got !== want) problems.push('core/' + f + ' 与正本不是同一份字节（got ' + got.slice(0, 10) + '…）——重跑 sync-core')
