@@ -1,0 +1,13 @@
+{
+  "_comment": "八项乐园顶栏数据正本（PLAN-全站统一-v2 追加：站间切换单源）。顺序固定；label 是顶栏全名；当前站由使用方按 hostname 判定。底栏（tabbar.json）与顶栏（parks.json）同源不同形。",
+  "parks": [
+    { "href": "https://diuci.com/", "label": "首页" },
+    { "href": "https://k12.diuci.com/", "label": "学古诗" },
+    { "href": "https://jiagu.diuci.com/", "label": "画甲骨" },
+    { "href": "https://lian.diuci.com/", "label": "连词" },
+    { "href": "https://zimi.diuci.com/", "label": "猜谜" },
+    { "href": "https://handle.diuci.com/", "label": "汉兜" },
+    { "href": "https://moon.diuci.com/", "label": "月冕" },
+    { "href": "https://ink.diuci.com/", "label": "大作战" }
+  ]
+}

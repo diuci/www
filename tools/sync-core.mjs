@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 // sync-core.mjs —— 统一核心分发脚本正本（PLAN-全站统一-v2 §3.1）。
 //
 // 与 tokens/check-ui 的模式相同：正本住 _deploy/core/，各站住拷贝。
@@ -19,7 +19,7 @@ const ROOT = path.resolve(HERE, '..')
 const DEPLOY = process.env.DEPLOY_ROOT || path.resolve(ROOT, '..', '_deploy')
 const SRC = path.join(DEPLOY, 'core')
 const DST = path.join(ROOT, 'core')
-const CORE_FILES = ['daily.mjs', 'theme.mjs', 'store.mjs', 'tabbar.json']
+const CORE_FILES = ['daily.mjs', 'theme.mjs', 'store.mjs', 'tabbar.json', 'parks.json']
 
 function sha256(buf) {
   return crypto.createHash('sha256').update(buf).digest('hex')

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 // check-core.mjs —— 统一核心闸门正本（PLAN-全站统一-v2 §3.1）。
 //
 // 与 check-ui 同构：正本在 _deploy/core/，各站经 tools/sync-core.mjs 拷贝，
@@ -18,7 +18,7 @@ import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const CORE_FILES = ['daily.mjs', 'theme.mjs', 'store.mjs', 'tabbar.json']
+const CORE_FILES = ['daily.mjs', 'theme.mjs', 'store.mjs', 'tabbar.json', 'parks.json']
 
 function fail(msg) {
   console.error('[check-core] ' + msg)
